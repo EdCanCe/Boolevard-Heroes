@@ -1,5 +1,6 @@
 import numpy as np
 from collections import deque
+from walls import *
 
 class Ghosts:
     """Gestiona la niebla y los fantasmas en el tablero de juego.
@@ -28,10 +29,12 @@ class Ghosts:
             [0, 0, 2, 2, 0, 0, 0, 0, 0, 0],
             [0, 0, 2, 2, 2, 2, 0, 0, 0, 0],
             [0, 0, 0, 0, 2, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 2, 2, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 2, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
+
+        self.fog_list = []
 
     # Métodos de generación de coordenadas aleatorias
     def generate_coords(self):
@@ -105,7 +108,7 @@ class Ghosts:
         foggy_neighbors = []
 
         for current_x, current_y in neighbors:
-            if self.dashboard[current_y][current_x] == 1:  # Casilla con niebla
+            if self.dashboard[current_y][current_x] == 2:  # hay fantasma
                 foggy_neighbors.append((current_x, current_y))
 
         return foggy_neighbors
@@ -128,8 +131,8 @@ class Ghosts:
 
                 visited.add((new_x, new_y))
 
-                if self.dashboard[new_y][new_x] == 1:
-                    self.dashboard[new_y][new_x] = 2
+                if self.dashboard[new_y][new_x] == 2:
+                    self.dashboard[current_y][current_x] = 2
                     q.append((new_x, new_y))
 
     # Verificación de límites del tablero
@@ -247,8 +250,12 @@ class Ghosts:
                     break
 
                 # Actualiza la casilla si es niebla o vacío
-                if self.dashboard[new_y][new_x] in [0, 1]:
+                if self.dashboard[new_y][new_x] == 0:
                     self.dashboard[new_y][new_x] = 2
+                    break
+                elif self.dashboard[new_y][new_x] == 1:
+                    self.dashboard[new_y][new_x] = 2
+                    self.fog_list.remove((new_x, new_y))
                     break
                 elif self.dashboard[new_y][new_x] == 2:
                     current_x, current_y = (new_x, new_y)
@@ -262,10 +269,14 @@ class Ghosts:
         """Coloca niebla o fantasma según el estado actual de la casilla."""
         if self.dashboard[y][x] == 0:
             self.dashboard[y][x] = 1  # Coloca niebla
+            self.fog_list.append((x, y))
 
         elif self.dashboard[y][x] == 1:
             self.dashboard[y][x] = 2  # Convierte niebla en fantasma
-            self.spread_fire(x, y) # TODO: Convertir a arreglo de tuplas
-
+            self.fog_list.remove((x, y))
+            
         elif self.dashboard[y][x] == 2:
             self.arise(x, y)  # Realiza oleada de fantasmas
+        
+        for (fog_x, fog_y) in self.fog_list:
+            self.spread_fire(fog_x, fog_y)
