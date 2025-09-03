@@ -4,7 +4,7 @@ Este proyecto reliza una simulación del juego de mesa **Flash Point: Fire Rescu
 
 El objetivo es recrear la dinámica juego original, pero envés de ser bomberos que apagarán fuego, serán héroes dispersando a fantasmas de una casa embrujada.
 
-<center><img src="https://gifdb.com/images/high/backyardigans-tyrone-tasha-dancing-efggqyqs84kn6yfs.gif"></center>
+![alt text](https://gifdb.com/images/high/backyardigans-tyrone-tasha-dancing-efggqyqs84kn6yfs.gif)
 
 La simulación incluye:
 - Representación del tablero y propagación del fuego.
@@ -14,6 +14,8 @@ La simulación incluye:
  - [Paredes y puertas](#paredes-y-puertas)
  - [Fantasmas y niebla](#fantasmas-y-niebla)
  - [Puntos de interés](#puntos-de-interés)
+
+<center><img src="https://imagenes.20minutos.es/files/image_1920_1080/uploads/imagenes/2022/11/01/jason-voorhees.jpeg"></center>
 
 ## Paredes y puertas
 
@@ -44,6 +46,8 @@ Los datos estarán guardados de ésta manera:
  - 0: celda vacia.
  - 1: niebla.
  - 2: fuego.
+
+<center><img src="/arise.png"></center>
 
 ### Niebla:
  - [x] Si donde se va a colocar niebla, ya hay niebla, se convierte en fantasma.

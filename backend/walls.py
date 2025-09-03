@@ -1,4 +1,4 @@
-class Walls():
+class Walls:
     """Representa el tablero de juego con paredes y puertas.
 
     La clase maneja un tablero compuesto por dos matrices:
@@ -20,8 +20,9 @@ class Walls():
     """
 
     def __init__(self):
-        """Inicializa las variables de la clase.
-        """
+        """Inicializa las matrices de paredes y puertas."""
+
+        # Matriz de paredes/puertas verticales (columnas)
         self.vertical = [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [1, 0, 0, 3, 0, 1, 0, 0, 1, 0],
@@ -33,6 +34,7 @@ class Walls():
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         ]
 
+        # Matriz de paredes/puertas horizontales (filas)
         self.horizontal = [
             [0, 1, 1, 1, 1, 1, 3, 1, 1, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -44,128 +46,67 @@ class Walls():
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         ]
 
-    # Métodos de acceso a paredes y puertas
+    # Getters
     def get_left(self, x, y):
-        """Devuelve el estado de la pared/puerta a la izquierda de (x, y).
-
-        Args:
-            x (int): Coordenada en el eje X.
-            y (int): Coordenada en el eje Y.
-
-        Returns:
-            float: Estado de la pared/puerta.
-        """
+        """Devuelve el estado de la pared/puerta a la izquierda de (x, y)."""
         if x <= 0:
-            return -1
+            return -1  # Fuera de límites
         return self.vertical[y][x-1]
 
-    def set_left(self, x, y, value):
-        """Asigna un valor a la pared/puerta izquierda de (x, y).
-
-        Args:
-            x (int): Coordenada en el eje X.
-            y (int): Coordenada en el eje Y.
-            value (float): Nuevo valor para la pared/puerta.
-        """
-        if x <= 0:
-            return
-        self.vertical[y][x-1] = value
-
     def get_right(self, x, y):
-        """Devuelve el estado de la pared/puerta a la derecha de (x, y).
-
-        Args:
-            x (int): Coordenada en el eje X.
-            y (int): Coordenada en el eje Y.
-
-        Returns:
-            float: Estado de la pared/puerta.
-        """
+        """Devuelve el estado de la pared/puerta a la derecha de (x, y)."""
         if x >= 9:
-            return -1
+            return -1  # Fuera de límites
         return self.vertical[y][x]
 
-    def set_right(self, x, y, value):
-        """Asigna un valor a la pared/puerta derecha de (x, y).
-
-        Args:
-            x (int): Coordenada en el eje X.
-            y (int): Coordenada en el eje Y.
-            value (float): Nuevo valor para la pared/puerta.
-        """
-        if x >= 9:
-            return
-        self.vertical[y][x] = value
-
     def get_up(self, x, y):
-        """Devuelve el estado de la pared/puerta arriba de (x, y).
-
-        Args:
-            x (int): Coordenada en el eje X.
-            y (int): Coordenada en el eje Y.
-
-        Returns:
-            float: Estado de la pared/puerta.
-        """
+        """Devuelve el estado de la pared/puerta arriba de (x, y)."""
         if y <= 0:
-            return -1
+            return -1  # Fuera de límites
         return self.horizontal[y-1][x]
 
-    def set_up(self, x, y, value):
-        """Asigna un valor a la pared/puerta arriba de (x, y).
+    def get_down(self, x, y):
+        """Devuelve el estado de la pared/puerta abajo de (x, y)."""
+        if y >= 7:
+            return -1  # Fuera de límites
+        return self.horizontal[y][x]
+    
+    # Setters
+    def set_left(self, x, y, value):
+        """Asigna un valor a la pared/puerta izquierda de (x, y)."""
+        if x <= 0:
+            return  # Fuera de límites
+        self.vertical[y][x-1] = value
 
-        Args:
-            x (int): Coordenada en el eje X.
-            y (int): Coordenada en el eje Y.
-            value (float): Nuevo valor para la pared/puerta.
-        """
+    def set_right(self, x, y, value):
+        """Asigna un valor a la pared/puerta derecha de (x, y)."""
+        if x >= 9:
+            return  # Fuera de límites
+        self.vertical[y][x] = value
+
+    def set_up(self, x, y, value):
+        """Asigna un valor a la pared/puerta arriba de (x, y)."""
         if y <= 0:
-            return
+            return  # Fuera de límites
         self.horizontal[y-1][x] = value
 
-    def get_down(self, x, y):
-        """Devuelve el estado de la pared/puerta abajo de (x, y).
-
-        Args:
-            x (int): Coordenada en el eje X.
-            y (int): Coordenada en el eje Y.
-
-        Returns:
-            float: Estado de la pared/puerta.
-        """
-        if y >= 7:
-            return -1
-        return self.horizontal[y][x]
-
     def set_down(self, x, y, value):
-        """Asigna un valor a la pared/puerta abajo de (x, y).
-
-        Args:
-            x (int): Coordenada en el eje X.
-            y (int): Coordenada en el eje Y.
-            value (float): Nuevo valor para la pared/puerta.
-        """
+        """Asigna un valor a la pared/puerta abajo de (x, y)."""
         if y >= 7:
-            return
+            return  # Fuera de límites
         self.horizontal[y][x] = value
 
-    # Métodos auxiliares
+    # Obtención de casillas adyacentes
     def get_neighbors(self, x, y):
         """Obtiene las casillas adyacentes accesibles desde (x, y).
 
         Una casilla es vecina si no hay pared, o si hay una puerta abierta
         o destruida.
-
-        Args:
-            x (int): Coordenada en el eje X.
-            y (int): Coordenada en el eje Y.
-
-        Returns:
-            list[tuple[int, int]]: Lista de coordenadas de casillas adyacentes.
         """
         neighbors = []
-        accepted_values = [0, 2, 4]  # accesibles
+        accepted_values = [0, 2, 4]  # Valores que representan adyacencia
 
+        # Verifica si las casillas de alrededor son adyacentes
         if self.get_left(x, y) in accepted_values:
             neighbors.append((x-1, y))
 
