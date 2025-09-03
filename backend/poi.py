@@ -4,7 +4,7 @@ class POI:
     """Clase que gestiona los puntos de interés (POI) en el tablero.
 
     Attributes:
-        POI_dashboard (list[list[int]]): Matriz que indica la ubicación de los POI.
+        dashboard (list[list[int]]): Matriz que indica la ubicación de los POI.
             0 -> vacío
             3 -> POI
         real_victims (np.ndarray): Vector de víctimas reales.
@@ -16,7 +16,7 @@ class POI:
         """Inicializa las variables de la clase.
         """
         self.ghosts = ghosts
-        self.POI_dashboard = [
+        self.dashboard = [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
@@ -56,15 +56,15 @@ class POI:
         """
         x, y = self.ghosts.generate_coords()
 
-        while self.POI_dashboard[y][x] != 0:
+        while self.dashboard[y][x] != 0:
             x, y = self.ghosts.generate_coords()
 
-        if self.POI_dashboard[y][x] == 0:
-            self.POI_dashboard[y][x] = 3
+        if self.dashboard[y][x] == 0:
+            self.dashboard[y][x] = 3
 
         elif self.ghosts.dashboard[y][x] in [1, 2]:
             self.ghosts.dashboard[y][x] = 0
-            self.POI_dashboard[y][x] = 3
+            self.dashboard[y][x] = 3
 
         else:
             return -1

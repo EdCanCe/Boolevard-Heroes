@@ -17,7 +17,7 @@ La simulación incluye:
 
 ## Paredes y puertas
 
-Dentro de [gameboard.py](/backend/gameboard.py) se pasan las paredes y puertas a 2 matrices en python para poderlas manejar de manera correcta. La base para pasar éstos datos es el tablero original:
+Dentro de [walls.py](/backend/walls.py) se pasan las paredes y puertas a 2 matrices en python para poderlas manejar de manera correcta. La base para pasar éstos datos es el tablero original:
 
 <center><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTH3LzP1H99HlgrHrFYmg0O0XdbWEf8MlqIyHMIvd7E9YWm1s4743mZpEW7CwcdcTqmdAc&usqp=CAU"></center>
 
@@ -63,7 +63,7 @@ Los datos estarán guardados de ésta manera:
 
 ## Puntos de interés:
 
-Dentro de [interestPoints.py](/backend/interestPoints.py) se encuentran las funciones de los puntos de interés:
+Dentro de [poi.py](/backend/poi.py) se encuentran las funciones de los puntos de interés:
  - Si hay fuego en un punto de interés se voltea automaticamente, descrubriendose si era persona o punto vacío.
  - Si un bombero llega a un POI se voltea automáticamente, descubriendo si era persona o falsa alarma.
  - Se deben salvar a 7 victimas para ganar.

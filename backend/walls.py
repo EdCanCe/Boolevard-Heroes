@@ -1,4 +1,4 @@
-class GameBoard():
+class Walls():
     """Representa el tablero de juego con paredes y puertas.
 
     La clase maneja un tablero compuesto por dos matrices:

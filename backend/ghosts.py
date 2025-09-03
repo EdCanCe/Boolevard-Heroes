@@ -1,7 +1,7 @@
 import numpy as np
 from collections import deque
 
-class self:
+class Ghosts:
     """Gestiona la niebla y los fantasmas en el tablero.
 
     La clase utiliza una matriz para representar la posición de la niebla
