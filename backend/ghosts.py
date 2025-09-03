@@ -34,7 +34,7 @@ class Ghosts:
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
-        self.fog_list = []
+        self.fog_list = [] # lista de casillas con niebla
 
     # Métodos de generación de coordenadas aleatorias
     def generate_coords(self):
@@ -98,11 +98,11 @@ class Ghosts:
         self.dashboard[y][x + 1] = value
 
     # Vecinos con niebla
-    def get_foggy_neighbors(self, x, y):
-        """Obtiene las casillas vecinas que contienen niebla y son adyacentes.
+    def get_ghosty_neighbors(self, x, y):
+        """Obtiene las casillas vecinas que contienen fantasma y son adyacentes.
 
         Returns:
-            list[tuple[int, int]]: Lista de coordenadas vecinas con niebla.
+            list[tuple[int, int]]: Lista de coordenadas vecinas con fantasmas.
         """
         neighbors = self.walls.get_neighbors(x, y)  # Vecinos accesibles según Walls
         foggy_neighbors = []
@@ -124,7 +124,7 @@ class Ghosts:
 
         while q:
             current_x, current_y = q.popleft()
-            neighbors = self.get_foggy_neighbors(current_x, current_y)
+            neighbors = self.get_ghosty_neighbors(current_x, current_y)
             for new_x, new_y in neighbors:
                 if (new_x, new_y) in visited:
                     continue
@@ -146,8 +146,11 @@ class Ghosts:
 
     # Explosión/oleada de fantasmas
     def arise(self, x, y):
-        """Realiza una oleada de fantasmas desde la posición (x, y) propagándose en todas las direcciones."""
-        directions = [(0, -1), (1, 0), (0, 1), (-1, 0)]  # Arriba, derecha, abajo, izquierda
+        """Realiza una oleada de fantasmas desde la posición (x, y) propagándose 
+        en todas las direcciones.
+        """
+        # Arriba, derecha, abajo, izquierda
+        directions = [(0, -1), (1, 0), (0, 1), (-1, 0)]  
 
         for diff_x, diff_y in directions:
             current_x, current_y = (x, y)
@@ -158,12 +161,16 @@ class Ghosts:
                 out_of_bounds = not self.board_length(new_x, new_y)
 
                 # Obtiene el valor de la pared o puerta en esa dirección
+                # Derecha
                 if diff_x == 1 and diff_y == 0:
                     value = self.walls.get_right(current_x, current_y)
+                # Izquierda
                 elif diff_x == -1 and diff_y == 0:
                     value = self.walls.get_left(current_x, current_y)
+                # Arriba
                 elif diff_x == 0 and diff_y == -1:
                     value = self.walls.get_up(current_x, current_y)
+                # Abajo
                 elif diff_x == 0 and diff_y == 1:
                     value = self.walls.get_down(current_x, current_y)
                 else:
@@ -177,6 +184,7 @@ class Ghosts:
 
                 # Manejo de paredes y puertas según su estado
                 # Pasa, daña, destruye o termina propagación según valor
+                # Derecha
                 if diff_x == 1 and diff_y == 0:
                     if value == 0:
                         can_pass = True
@@ -194,6 +202,7 @@ class Ghosts:
                         can_end = True
                     else:
                         can_pass = True
+                # Izquierda
                 elif diff_x == -1 and diff_y == 0:
                     if value == 0:
                         can_pass = True
@@ -211,6 +220,7 @@ class Ghosts:
                         can_end = True
                     else:
                         can_pass = True
+                # Arriba
                 elif diff_x == 0 and diff_y == -1:
                     if value == 0:
                         can_pass = True
@@ -228,6 +238,7 @@ class Ghosts:
                         can_end = True
                     else:
                         can_pass = True
+                # Abajo
                 elif diff_x == 0 and diff_y == 1:
                     if value == 0:
                         can_pass = True
@@ -249,16 +260,16 @@ class Ghosts:
                 if can_end:
                     break
 
-                # Actualiza la casilla si es niebla o vacío
-                if self.dashboard[new_y][new_x] == 0:
-                    self.dashboard[new_y][new_x] = 2
+                # Actualiza la casilla si es niebla, vacío o fantasma
+                if self.dashboard[new_y][new_x] == 0: # celda vacia
+                    self.dashboard[new_y][new_x] = 2 # pone fantasma
                     break
-                elif self.dashboard[new_y][new_x] == 1:
-                    self.dashboard[new_y][new_x] = 2
-                    self.fog_list.remove((new_x, new_y))
+                elif self.dashboard[new_y][new_x] == 1: # celda con niebla
+                    self.dashboard[new_y][new_x] = 2 # pone fantasma
+                    self.fog_list.remove((new_x, new_y)) # quita lista de niebla
                     break
-                elif self.dashboard[new_y][new_x] == 2:
-                    current_x, current_y = (new_x, new_y)
+                elif self.dashboard[new_y][new_x] == 2: # celda con fantasma
+                    current_x, current_y = (new_x, new_y) # establece como actual
                     continue
                 else:
                     self.dashboard[new_y][new_x] = 2
