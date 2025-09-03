@@ -1,4 +1,3 @@
-from ghosts import *
 import numpy as np
 
 class POI:
@@ -13,17 +12,20 @@ class POI:
         poi (np.ndarray): Vector combinado de víctimas y falsas alarmas.
     """
 
-    # ----- Tablero de POI -----
-    POI_dashboard = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 3, 0, 0, 0, 0, 0, 0, 3, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    ]
+    def __init__(self, ghosts):
+        """Inicializa las variables de la clase.
+        """
+        self.ghosts = ghosts
+        self.POI_dashboard = [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 3, 0, 0, 0, 0, 0, 0, 3, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ]
 
     # ----- Vectores de víctimas y falsas alarmas -----
     real_victims = np.full(12, 4)
@@ -31,40 +33,38 @@ class POI:
     poi = np.concatenate((real_victims, false_alarms)) # Se juntan ambos vectores
 
     # ----- Selección aleatoria de un POI -----
-    @staticmethod
-    def pick_poi():
+    def pick_poi(self):
         """Selecciona un POI aleatoriamente y lo elimina del vector.
 
         Returns:
-            int: Valor del POI seleccionado (4 o 5), o -1 si no quedan POI.
+            int: Valor del POI seleccionado (4 o 5).
         """
-        if len(POI.poi) <= 0:
+        if len(self.poi) <= 0:
             return -1
 
-        np.random.shuffle(POI.poi)
-        poi_value = POI.poi[0]
-        POI.poi = np.delete(POI.poi, 0)
+        np.random.shuffle(self.poi)
+        poi_value = self.poi[0]
+        self.poi = np.delete(self.poi, 0)
         return poi_value
 
     # ----- Colocación de un POI en el tablero -----
-    @staticmethod
-    def place_poi():
+    def place_poi(self):
         """Coloca un POI en el tablero en coordenadas aleatorias libres.
 
         Returns:
             int: -1 si no se pudo colocar el POI, None si se colocó correctamente.
         """
-        x, y = FoggyGhost.generate_coords()
+        x, y = self.ghosts.generate_coords()
 
-        while POI.POI_dashboard[y][x] != 0:
-            x, y = FoggyGhost.generate_coords()
+        while self.POI_dashboard[y][x] != 0:
+            x, y = self.ghosts.generate_coords()
 
-        if POI.POI_dashboard[y][x] == 0:
-            POI.POI_dashboard[y][x] = 3
+        if self.POI_dashboard[y][x] == 0:
+            self.POI_dashboard[y][x] = 3
 
-        elif FoggyGhost.dashboard[y][x] in [1, 2]:
-            FoggyGhost.dashboard[y][x] = 0
-            POI.POI_dashboard[y][x] = 3
+        elif self.ghosts.dashboard[y][x] in [1, 2]:
+            self.ghosts.dashboard[y][x] = 0
+            self.POI_dashboard[y][x] = 3
 
         else:
             return -1

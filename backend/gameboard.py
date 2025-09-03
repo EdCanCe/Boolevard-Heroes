@@ -1,4 +1,4 @@
-class GameBoard:
+class GameBoard():
     """Representa el tablero de juego con paredes y puertas.
 
     La clase maneja un tablero compuesto por dos matrices:
@@ -19,31 +19,33 @@ class GameBoard:
         horizontal (list[list[float]]): Matriz de paredes y puertas horizontales.
     """
 
-    vertical = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 3, 0, 1, 0, 0, 1, 0],
-        [1, 0, 0, 1, 0, 3, 0, 0, 1, 0],
-        [3, 0, 3, 0, 0, 0, 1, 0, 1, 0],
-        [1, 0, 1, 0, 0, 0, 3, 0, 3, 0],
-        [1, 0, 0, 0, 0, 1, 0, 1, 1, 0],
-        [1, 0, 0, 0, 0, 3, 0, 3, 1, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    ]
+    def __init__(self):
+        """Inicializa las variables de la clase.
+        """
+        self.vertical = [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 0, 3, 0, 1, 0, 0, 1, 0],
+            [1, 0, 0, 1, 0, 3, 0, 0, 1, 0],
+            [3, 0, 3, 0, 0, 0, 1, 0, 1, 0],
+            [1, 0, 1, 0, 0, 0, 3, 0, 3, 0],
+            [1, 0, 0, 0, 0, 1, 0, 1, 1, 0],
+            [1, 0, 0, 0, 0, 3, 0, 3, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ]
 
-    horizontal = [
-        [0, 1, 1, 1, 1, 1, 3, 1, 1, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 1, 1, 1, 1, 3, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 1, 1, 3, 1, 1, 1, 1, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 1, 3, 1, 1, 1, 1, 1, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    ]
+        self.horizontal = [
+            [0, 1, 1, 1, 1, 1, 3, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 1, 1, 1, 1, 1, 3, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 3, 1, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 3, 1, 1, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ]
 
     # Métodos de acceso a paredes y puertas
-    @staticmethod
-    def get_left(x, y):
+    def get_left(self, x, y):
         """Devuelve el estado de la pared/puerta a la izquierda de (x, y).
 
         Args:
@@ -55,10 +57,9 @@ class GameBoard:
         """
         if x <= 0:
             return -1
-        return GameBoard.vertical[y][x-1]
+        return self.vertical[y][x-1]
 
-    @staticmethod
-    def set_left(x, y, value):
+    def set_left(self, x, y, value):
         """Asigna un valor a la pared/puerta izquierda de (x, y).
 
         Args:
@@ -68,10 +69,9 @@ class GameBoard:
         """
         if x <= 0:
             return
-        GameBoard.vertical[y][x-1] = value
+        self.vertical[y][x-1] = value
 
-    @staticmethod
-    def get_right(x, y):
+    def get_right(self, x, y):
         """Devuelve el estado de la pared/puerta a la derecha de (x, y).
 
         Args:
@@ -83,10 +83,9 @@ class GameBoard:
         """
         if x >= 9:
             return -1
-        return GameBoard.vertical[y][x]
+        return self.vertical[y][x]
 
-    @staticmethod
-    def set_right(x, y, value):
+    def set_right(self, x, y, value):
         """Asigna un valor a la pared/puerta derecha de (x, y).
 
         Args:
@@ -96,10 +95,9 @@ class GameBoard:
         """
         if x >= 9:
             return
-        GameBoard.vertical[y][x] = value
+        self.vertical[y][x] = value
 
-    @staticmethod
-    def get_up(x, y):
+    def get_up(self, x, y):
         """Devuelve el estado de la pared/puerta arriba de (x, y).
 
         Args:
@@ -111,10 +109,9 @@ class GameBoard:
         """
         if y <= 0:
             return -1
-        return GameBoard.horizontal[y-1][x]
+        return self.horizontal[y-1][x]
 
-    @staticmethod
-    def set_up(x, y, value):
+    def set_up(self, x, y, value):
         """Asigna un valor a la pared/puerta arriba de (x, y).
 
         Args:
@@ -124,10 +121,9 @@ class GameBoard:
         """
         if y <= 0:
             return
-        GameBoard.horizontal[y-1][x] = value
+        self.horizontal[y-1][x] = value
 
-    @staticmethod
-    def get_down(x, y):
+    def get_down(self, x, y):
         """Devuelve el estado de la pared/puerta abajo de (x, y).
 
         Args:
@@ -139,10 +135,9 @@ class GameBoard:
         """
         if y >= 7:
             return -1
-        return GameBoard.horizontal[y][x]
+        return self.horizontal[y][x]
 
-    @staticmethod
-    def set_down(x, y, value):
+    def set_down(self, x, y, value):
         """Asigna un valor a la pared/puerta abajo de (x, y).
 
         Args:
@@ -152,11 +147,10 @@ class GameBoard:
         """
         if y >= 7:
             return
-        GameBoard.horizontal[y][x] = value
+        self.horizontal[y][x] = value
 
     # Métodos auxiliares
-    @staticmethod
-    def get_neighbors(x, y):
+    def get_neighbors(self, x, y):
         """Obtiene las casillas adyacentes accesibles desde (x, y).
 
         Una casilla es vecina si no hay pared, o si hay una puerta abierta
@@ -172,16 +166,16 @@ class GameBoard:
         neighbors = []
         accepted_values = [0, 2, 4]  # accesibles
 
-        if GameBoard.get_left(x, y) in accepted_values:
+        if self.get_left(x, y) in accepted_values:
             neighbors.append((x-1, y))
 
-        if GameBoard.get_right(x, y) in accepted_values:
+        if self.get_right(x, y) in accepted_values:
             neighbors.append((x+1, y))
 
-        if GameBoard.get_up(x, y) in accepted_values:
+        if self.get_up(x, y) in accepted_values:
             neighbors.append((x, y-1))
 
-        if GameBoard.get_down(x, y) in accepted_values:
+        if self.get_down(x, y) in accepted_values:
             neighbors.append((x, y+1))
 
         return neighbors
