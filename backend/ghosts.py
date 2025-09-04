@@ -1,4 +1,5 @@
 import numpy as np
+from poi import *
 from collections import deque
 
 class Ghosts:
@@ -47,6 +48,10 @@ class Ghosts:
         return (x, y)
 
     # Getters de celdas adyacentes
+    def get_on(self, x, y):
+        """Devuelve el valor de la casilla (x, y)."""
+        return self.dashboard[y][x]
+
     def get_up(self, x, y):
         """Devuelve el valor de la casilla arriba de (x, y)."""
         if y <= 1 or y >= 7:
@@ -72,6 +77,10 @@ class Ghosts:
         return self.dashboard[y][x + 1]
 
     # Setters de celdas adyacentes
+    def set_on(self, x, y, value):
+        """Asigna un valor a la casilla (x, y)."""
+        self.dashboard[y][x] = value
+
     def set_up(self, x, y, value):
         """Asigna un valor a la casilla arriba de (x, y)."""
         if y <= 1 or y >= 7:
@@ -96,7 +105,7 @@ class Ghosts:
             return
         self.dashboard[y][x + 1] = value
 
-    # Vecinos con niebla
+    # Vecinos con fantasmas
     def get_ghosty_neighbors(self, x, y):
         """Obtiene las casillas vecinas que contienen fantasma y son adyacentes.
 
@@ -113,7 +122,7 @@ class Ghosts:
         return foggy_neighbors
 
     # Propagación de niebla/fantasmas
-    def spread_fire(self, x, y):
+    def spread_ghost(self, x, y):
         """Propaga la niebla convirtiéndola en fantasmas a través de vecinos accesibles."""
         q = deque()
         visited = set()
@@ -131,7 +140,7 @@ class Ghosts:
                 visited.add((new_x, new_y))
 
                 if self.dashboard[new_y][new_x] == 2:
-                    self.dashboard[current_y][current_x] = 2
+                    self.place_ghost(current_x, current_y) # pone fantasma
                     q.append((new_x, new_y))
 
     # Verificación de límites del tablero
@@ -201,6 +210,7 @@ class Ghosts:
                         can_end = True
                     else:
                         can_pass = True
+                        
                 # Izquierda
                 elif diff_x == -1 and diff_y == 0:
                     if value == 0:
@@ -219,6 +229,7 @@ class Ghosts:
                         can_end = True
                     else:
                         can_pass = True
+
                 # Arriba
                 elif diff_x == 0 and diff_y == -1:
                     if value == 0:
@@ -237,6 +248,7 @@ class Ghosts:
                         can_end = True
                     else:
                         can_pass = True
+                        
                 # Abajo
                 elif diff_x == 0 and diff_y == 1:
                     if value == 0:
@@ -261,20 +273,20 @@ class Ghosts:
 
                 # Actualiza la casilla si es niebla, vacío o fantasma
                 if self.dashboard[new_y][new_x] == 0: # celda vacia
-                    self.dashboard[new_y][new_x] = 2 # pone fantasma
+                    self.place_ghost(new_x, new_y) # pone fantasma
                     break
                 elif self.dashboard[new_y][new_x] == 1: # celda con niebla
-                    self.dashboard[new_y][new_x] = 2 # pone fantasma
+                    self.place_ghost(new_x, new_y) # pone fantasma
                     self.fog_list.remove((new_x, new_y)) # quita lista de niebla
                     break
                 elif self.dashboard[new_y][new_x] == 2: # celda con fantasma
                     current_x, current_y = (new_x, new_y) # establece como actual
                     continue
                 else:
-                    self.dashboard[new_y][new_x] = 2
+                    self.place_ghost(new_x, new_y) # pone fantasma
                     break
 
-    # Colocación de niebla/fantasmas para pruebas
+    # Colocación de niebla de cada turno
     def place_fog(self, x, y):
         """Coloca niebla o fantasma según el estado actual de la casilla."""
         if self.dashboard[y][x] == 0:
@@ -289,4 +301,10 @@ class Ghosts:
             self.arise(x, y)  # Realiza oleada de fantasmas
         
         for (fog_x, fog_y) in self.fog_list:
-            self.spread_fire(fog_x, fog_y)
+            self.spread_ghost(fog_x, fog_y)
+
+    # Colocación de fantasma en una casilla
+    def place_ghost(self, x, y):
+        self.dashboard[y][x] = 2
+
+        # TODO: Verificar si en esa casilla hay un poi
