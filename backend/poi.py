@@ -32,10 +32,10 @@ class POI:
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
-    # Vectores de víctimas reales y falsas alarmas
-    real_victims = np.full(12, 4)  # 12 víctimas reales
-    false_alarms = np.full(6, 5)   # 6 falsas alarmas
-    poi = np.concatenate((real_victims, false_alarms))  # Se combinan ambos vectores
+        # Vectores de víctimas reales y falsas alarmas
+        self.real_victims = np.full(12, 4)  # 12 víctimas reales
+        self.false_alarms = np.full(6, 5)   # 6 falsas alarmas
+        self.poi = np.concatenate((self.real_victims, self.false_alarms))  # Se combinan ambos vectores
 
     def pick_poi(self):
         """Selecciona un POI aleatoriamente y lo elimina del vector.
@@ -43,22 +43,19 @@ class POI:
         Returns:
             int: Valor del POI seleccionado.
         """
-        if len(self.poi) <= 0:
+        if len(self.self.poi) <= 0:
             return -1  # No hay POI disponibles
 
         # Mezcla el vector y selecciona el primer POI
-        np.random.shuffle(self.poi)
-        poi_value = self.poi[0]
+        np.random.shuffle(self.self.poi)
+        self.poi_value = self.self.poi[0]
 
         # Elimina el POI seleccionado del vector
-        self.poi = np.delete(self.poi, 0)
-        return poi_value
+        self.self.poi = np.delete(self.self.poi, 0)
+        return self.poi_value
 
     def place_poi(self):
-        """Coloca un POI en el tablero en coordenadas aleatorias libres.
-
-        Verifica que la casilla esté libre o reemplaza ciertos valores
-        del tablero de ghosts si es necesario.
+        """Coloca un POI en el tablero.
 
         Returns:
             int: -1 si no se pudo colocar el POI, o none si se colocó correctamente.
@@ -79,3 +76,8 @@ class POI:
 
         else:
             return -1  # No se pudo colocar el POI
+
+    def move_poi(self, old_x, old_y, new_x, new_y):
+        """Mueve un POI a otra casilla."""
+        
+        self.dashboard[old_y][old_x], self.dashboard[new_y][new_x] = self.dashboard[new_y][new_x], self.dashboard[old_y][old_x]

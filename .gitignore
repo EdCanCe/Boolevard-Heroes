@@ -18,6 +18,7 @@ env/
 **/.ipynb_checkpoints/
 .vscode/
 test.ipynb
+todo.*
 
 __pycache__/
 
