@@ -35,8 +35,11 @@ class POI:
         # Vectores de víctimas reales y falsas alarmas
         self.real_victims = np.full(12, 4)  # 12 víctimas reales
         self.false_alarms = np.full(6, 5)   # 6 falsas alarmas
-        self.poi = np.concatenate((self.real_victims, self.false_alarms))  # Se combinan ambos vectores
+        self.poi_list = np.concatenate((self.real_victims, self.false_alarms))  # Se combinan ambos vectores
+
         self.current = 3 # ! Algo iba a ser con este, ahorita veo que pedo
+        self.rescued_victims = 0
+        self.scared_victims = 0
 
     def pick_poi(self):
         """Selecciona un POI aleatoriamente y lo elimina del vector.
@@ -44,15 +47,15 @@ class POI:
         Returns:
             int: Valor del POI seleccionado.
         """
-        if len(self.poi) <= 0:
+        if len(self.poi_list) <= 0:
             return -1  # No hay POI disponibles
 
         # Mezcla el vector y selecciona el primer POI
-        np.random.shuffle(self.poi)
-        self.poi_value = self.poi[0]
+        np.random.shuffle(self.poi_list)
+        self.poi_value = self.poi_list[0]
 
         # Elimina el POI seleccionado del vector
-        self.poi = np.delete(self.poi, 0)
+        self.poi_list = np.delete(self.poi_list, 0)
         return self.poi_value
 
     def place_poi(self):

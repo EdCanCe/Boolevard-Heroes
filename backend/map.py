@@ -14,11 +14,12 @@ class Map(Model):
         self.walls = Walls()
         self.ghosts = Ghosts(self.walls)
         self.poi = POI(self.ghosts)
-        self.ghosts.add_map(self)
+        self.ghosts.add_map(self.poi)
         self.heroes = MultiGrid(10, 8, torus = False)
 
         self.damage_points = 0 # El daño actual del mapa
-        self.rescued_victims = 0
-        self.scared_victims = 0
 
+        print("Ay cabrón")
         print(self.ghosts.poi.pick_poi())
+
+Map()
