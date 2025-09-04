@@ -229,6 +229,11 @@ class MoveWithVictim(Action):
         self.hero.update_position(self.action_x, self.action_y)
         self.hero.map.poi.move_poi(self.current_x, self.current_y, self.action_x, self.action_y)
 
+        # Verifica si acaba de salvar a la persona
+        if self.action_x in [0, 10] or self.action_y in [0, 8]:
+            self.hero.map.rescued_victims += 1
+            self.hero.map.poi.current -= 1
+
         # TODO: Añadir lo correspondiente al JSON
 
         return True
