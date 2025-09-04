@@ -47,6 +47,10 @@ class Ghosts:
         return (x, y)
 
     # Getters de celdas adyacentes
+    def get_on(self, x, y):
+        """Devuelve el valor de la casilla (x, y)."""
+        return self.dashboard[y][x]
+
     def get_up(self, x, y):
         """Devuelve el valor de la casilla arriba de (x, y)."""
         if y <= 1 or y >= 7:
@@ -72,6 +76,10 @@ class Ghosts:
         return self.dashboard[y][x + 1]
 
     # Setters de celdas adyacentes
+    def set_on(self, x, y, value):
+        """Asigna un valor a la casilla (x, y)."""
+        self.dashboard[y][x] = value
+
     def set_up(self, x, y, value):
         """Asigna un valor a la casilla arriba de (x, y)."""
         if y <= 1 or y >= 7:

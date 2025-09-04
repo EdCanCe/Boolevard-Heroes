@@ -6,7 +6,7 @@ class Walls:
         - horizontal: paredes y puertas horizontales (entre filas)
 
     Cada valor en las matrices representa el estado de la pared o puerta:
-        -1   -> fuera de límites
+         -1   -> fuera de límites
          0   -> vacío o pared destruida
          0.5 -> pared dañada
          1   -> pared completa
@@ -51,7 +51,7 @@ class Walls:
         """Devuelve el estado de la pared/puerta a la izquierda de (x, y)."""
         if x <= 0:
             return -1  # Fuera de límites
-        return self.vertical[y][x-1]
+        return self.vertical[y][x - 1]
 
     def get_right(self, x, y):
         """Devuelve el estado de la pared/puerta a la derecha de (x, y)."""
@@ -63,7 +63,7 @@ class Walls:
         """Devuelve el estado de la pared/puerta arriba de (x, y)."""
         if y <= 0:
             return -1  # Fuera de límites
-        return self.horizontal[y-1][x]
+        return self.horizontal[y - 1][x]
 
     def get_down(self, x, y):
         """Devuelve el estado de la pared/puerta abajo de (x, y)."""
@@ -76,7 +76,7 @@ class Walls:
         """Asigna un valor a la pared/puerta izquierda de (x, y)."""
         if x <= 0:
             return  # Fuera de límites
-        self.vertical[y][x-1] = value
+        self.vertical[y][x - 1] = value
 
     def set_right(self, x, y, value):
         """Asigna un valor a la pared/puerta derecha de (x, y)."""
@@ -88,7 +88,7 @@ class Walls:
         """Asigna un valor a la pared/puerta arriba de (x, y)."""
         if y <= 0:
             return  # Fuera de límites
-        self.horizontal[y-1][x] = value
+        self.horizontal[y - 1][x] = value
 
     def set_down(self, x, y, value):
         """Asigna un valor a la pared/puerta abajo de (x, y)."""
@@ -108,15 +108,15 @@ class Walls:
 
         # Verifica si las casillas de alrededor son adyacentes
         if self.get_left(x, y) in accepted_values:
-            neighbors.append((x-1, y))
+            neighbors.append((x - 1, y))
 
         if self.get_right(x, y) in accepted_values:
-            neighbors.append((x+1, y))
+            neighbors.append((x + 1, y))
 
         if self.get_up(x, y) in accepted_values:
-            neighbors.append((x, y-1))
+            neighbors.append((x, y - 1))
 
         if self.get_down(x, y) in accepted_values:
-            neighbors.append((x, y+1))
+            neighbors.append((x, y + 1))
 
         return neighbors

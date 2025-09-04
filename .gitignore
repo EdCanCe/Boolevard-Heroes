@@ -12,9 +12,12 @@
 [Uu]ser[Ss]ettings/
 *.log
 
+.venv/
 env/
 *.env
 **/.ipynb_checkpoints/
+.vscode/
+test.ipynb
 
 __pycache__/
 
