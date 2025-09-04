@@ -1,6 +1,5 @@
 import numpy as np
 from collections import deque
-from walls import *
 
 class Ghosts:
     """Gestiona la niebla y los fantasmas en el tablero de juego.
