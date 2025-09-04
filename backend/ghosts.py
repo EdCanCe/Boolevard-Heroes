@@ -1,5 +1,5 @@
 import numpy as np
-from poi import *
+from map import *
 from collections import deque
 
 class Ghosts:
@@ -35,6 +35,11 @@ class Ghosts:
         ]
 
         self.fog_list = [] # lista de casillas con niebla
+
+    def add_map(self, map : Map):
+        from map import Map
+
+        self.map = map
 
     # Métodos de generación de coordenadas aleatorias
     def generate_coords(self):
@@ -306,5 +311,9 @@ class Ghosts:
     # Colocación de fantasma en una casilla
     def place_ghost(self, x, y):
         self.dashboard[y][x] = 2
+
+        self.map.poi # Accedes a la clase poi
+        self.map.scared_victims # Accedes a las muertas
+        self.map.poi.current # Aquí eliminas un Poi
 
         # TODO: Verificar si en esa casilla hay un poi

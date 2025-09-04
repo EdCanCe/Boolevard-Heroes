@@ -36,6 +36,7 @@ class POI:
         self.real_victims = np.full(12, 4)  # 12 víctimas reales
         self.false_alarms = np.full(6, 5)   # 6 falsas alarmas
         self.poi = np.concatenate((self.real_victims, self.false_alarms))  # Se combinan ambos vectores
+        self.current = 3 # ! Algo iba a ser con este, ahorita veo que pedo
 
     def pick_poi(self):
         """Selecciona un POI aleatoriamente y lo elimina del vector.
@@ -43,15 +44,15 @@ class POI:
         Returns:
             int: Valor del POI seleccionado.
         """
-        if len(self.self.poi) <= 0:
+        if len(self.poi) <= 0:
             return -1  # No hay POI disponibles
 
         # Mezcla el vector y selecciona el primer POI
-        np.random.shuffle(self.self.poi)
-        self.poi_value = self.self.poi[0]
+        np.random.shuffle(self.poi)
+        self.poi_value = self.poi[0]
 
         # Elimina el POI seleccionado del vector
-        self.self.poi = np.delete(self.self.poi, 0)
+        self.poi = np.delete(self.poi, 0)
         return self.poi_value
 
     def place_poi(self):
@@ -66,17 +67,12 @@ class POI:
         while self.dashboard[y][x] != 0:
             x, y = self.ghosts.generate_coords()
 
-        if self.dashboard[y][x] == 0:
-            self.dashboard[y][x] = 3  # Coloca el POI en la casilla libre
+        self.dashboard[y][x] = 3  # Coloca el POI en la casilla libre
 
-        elif self.ghosts.dashboard[y][x] in [1, 2]:
+        if self.ghosts.dashboard[y][x] in [1, 2]:
             # Si la casilla contiene ciertos valores de ghosts, los elimina
             self.ghosts.dashboard[y][x] = 0
-            self.dashboard[y][x] = 3  # Coloca el POI
-
-        else:
-            return -1  # No se pudo colocar el POI
-
+        
     def move_poi(self, old_x, old_y, new_x, new_y):
         """Mueve un POI a otra casilla."""
         
