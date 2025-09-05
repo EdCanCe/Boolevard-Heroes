@@ -329,3 +329,4 @@ class Ghosts:
                 self.poi.scared_victims += 1 # sumar 1 a victimas no salvadas
 
             self.poi.remove(x, y) # quitar POI del tablero y restar cantidad de actuales
+            self.poi.removed_pois.append((x, y))
