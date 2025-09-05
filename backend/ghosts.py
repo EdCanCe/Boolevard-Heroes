@@ -1,6 +1,7 @@
 import numpy as np
-from poi import *
 from collections import deque
+
+from poi import *
 
 class Ghosts:
     """Gestiona la niebla y los fantasmas en el tablero de juego.
@@ -281,7 +282,8 @@ class Ghosts:
                     break
                 elif self.dashboard[new_y][new_x] == 1: # celda con niebla
                     self.place_ghost(new_x, new_y) # pone fantasma
-                    self.fog_list.remove((new_x, new_y)) # quita lista de niebla
+                    if (new_x, new_y) in self.fog_list:
+                        self.fog_list.remove((new_x, new_y)) # quita lista de niebla
                     break
                 elif self.dashboard[new_y][new_x] == 2: # celda con fantasma
                     current_x, current_y = (new_x, new_y) # establece como actual
@@ -291,15 +293,19 @@ class Ghosts:
                     break
 
     # Colocación de niebla de cada turno
-    def place_fog(self, x, y):
+    def place_fog(self):
         """Coloca niebla o fantasma según el estado actual de la casilla."""
+
+        (x, y) = self.generate_coords()
+
         if self.dashboard[y][x] == 0:
             self.dashboard[y][x] = 1  # Coloca niebla
             self.fog_list.append((x, y))
 
         elif self.dashboard[y][x] == 1: # Hay niebla
             self.place_ghost(x, y) # colocar fantasma
-            self.fog_list.remove((x, y)) # remover niebla de la lista
+            if (x, y) in self.fog_list:
+                self.fog_list.remove((x, y))
             
         elif self.dashboard[y][x] == 2:
             self.arise(x, y)  # Realiza oleada de fantasmas
@@ -309,18 +315,17 @@ class Ghosts:
 
     # Colocación de fantasma en una casilla
     def place_ghost(self, x, y):
+        """Coloca un fantasma en una casilla."""
+
         self.dashboard[y][x] = 2
 
-        if (self.poi.dashboard[y][x] >= 3): # hay un POI
+        if self.poi.dashboard[y][x] >= 3: # hay un POI
             poi_value = self.poi.dashboard[y][x]
             
-            if(poi_value == 3): # POI
-                poi_value = self.poi.pick_poi()
+            if(poi_value == 3): # POI sin descubrir
+                poi_value = self.poi.pick(x, y) # Obtiene el poi que se reveló
             
             if(poi_value == 4): # victima real
                 self.poi.scared_victims += 1 # sumar 1 a victimas no salvadas
-                self.poi.current -= 1 # quitar 1 punto de interes actual
-            elif(poi_value == 5): # falsa alarma
-                self.poi.current -= 1 # quitar 1 punto de interes actual
 
-            self.poi.dashboard[y][x] = 0 # quitar poi del tablero
+            self.poi.remove(x, y) # quitar POI del tablero y restar cantidad de actuales
