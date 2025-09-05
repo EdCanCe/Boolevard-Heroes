@@ -12,7 +12,7 @@ for i in range(100):
     simulation = Map(True)
 
     while not simulation.game_over():
-        simulation.turn()
+        json = simulation.turn()
 
     print(f"Simulación no: {i}")
 
@@ -27,5 +27,7 @@ for i in range(100):
     print(f"La partida se {'ganó' if simulation.win else 'perdió'}")
 
     rescued += simulation.poi.rescued_victims
+
+    
 
 print(f"Se rescataron en total {rescued}")

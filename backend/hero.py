@@ -1,6 +1,6 @@
 from mesa import Agent
 import numpy as np
-import json
+import copy
 
 # Con ChatGPT se encontró como evitar importes circulares
 # No ayudó a la lógica del código, solo a eso.
@@ -55,7 +55,7 @@ class Hero(Agent):
         self.action_points = self.stored_action_points + 4 # Se actualizan sus puntos de acción
 
         self.json = { # Json que se va a mandar
-            "num_steps": 0,
+            "num_steps": self.map.num_steps,
             "saved_victims": 0,
             "scared_victims": 0,
             "damaged_points": 0,
@@ -99,12 +99,43 @@ class Hero(Agent):
                 self.map.poi.willBeRescued(self.x, self.y) # Quito en el mapa la víctima
 
             self.order += 1
+        
+        self.old_matrix = copy.deepcopy(self.map.ghosts.dashboard)
+        self.map.poi.added_pois = []
+        self.map.poi.removed_pois = []
 
         # Después de los movimientos del héroe, finalizo el turno
         self.map.ghosts.place_fog() # Coloca la niebla
+        self.check_ghost_changes() # verifica cambios y agrega en json
+
+        self.order += 1 # cambio de sub-turbo entre colocar fantasmas y pois
+
+        for p in self.map.poi.removed_pois:
+            poi = {
+                "x": p[0],
+                "y": p[1],
+                "status": 0, # poi eliminado
+                "order": self.order
+            }
+
+            self.json["pois"].append(poi)
+        
+        self.order += 1 # entre pois removidos y pois agregados
 
         while self.map.poi.current < 3: # Coloca POIs si es que hay menos de 3
             self.map.poi.place(self.map.heroes)
+
+        for p in self.map.poi.added_pois:
+            poi = {
+                "x": p[0],
+                "y": p[1],
+                "status": 3, # poi agregado
+                "order": self.order
+            }
+        
+            self.json["pois"].append(poi)
+
+            # TODO: En unity verificar si al poner el poi hay fuego
 
         if self.map.ghosts.get_on(self.x, self.y): # Si se extendieron los fantasmas a mi casilla
             if self.has_victim: # Si estaba con una víctima, se asusta
@@ -113,8 +144,22 @@ class Hero(Agent):
 
             self.to_closest_spawn_point() # Lo lleva al spawnpoint
             self.stored_action_points = 0 # Se eliminan puntos de acción guardados
+            agent = {
+                "x": self.x,
+                "y": self.y,
+                "carrying": False,
+                "energy": self.action_points,
+                "action": "Regresa a spawnpoit",
+                "order": self.order + 1
+            }
 
-        # TODO: Aquí se crearía un JSON que se regresaría en la función
+            self.json["agents"].append(agent)
+
+        self.json["saved_victims"] = self.map.poi.rescued_victims
+        self.json["scared_victims"] = self.map.poi.scared_victims
+        self.json["damaged_points"] = self.map.damage_points
+
+        return self.json
 
     def to_closest_spawn_point(self):
         """Mueve el héroe al spawn point más cercano."""
@@ -129,3 +174,22 @@ class Hero(Agent):
                 closest_spawn_point = (spawn_point[0], spawn_point[1], distance)
 
         self.update_position(closest_spawn_point[0], closest_spawn_point[1])
+    
+    def check_ghost_changes(self):
+        """
+        """
+        for y in range(len(self.old_matrix)):
+            for x in range(len(self.old_matrix[y])):
+                if self.old_matrix[y][x] != self.map.ghosts.dashboard[y][x]:
+                    ghost = {
+                        "x": x,
+                        "y": y,
+                        "status": self.map.ghosts.dashboard[y][x],
+                        "order": self.order
+                    }
+
+                    self.json["ghosts"].append(ghost)
+        
+        
+
+

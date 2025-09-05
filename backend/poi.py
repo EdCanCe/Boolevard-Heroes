@@ -37,9 +37,11 @@ class POI:
         self.false_alarms = np.full(6, 5)   # 6 falsas alarmas
         self.poi_list = np.concatenate((self.real_victims, self.false_alarms))  # Se combinan ambos vectores
 
-        self.current = 3 # ! Algo iba a ser con este, ahorita veo que pedo
+        self.current = 3
         self.rescued_victims = 0
         self.scared_victims = 0
+        self.removed_pois = []
+        self.added_pois = []
 
     def pick(self, x, y):
         """Selecciona un POI aleatoriamente y lo elimina del vector.
@@ -86,6 +88,7 @@ class POI:
             self.ghosts.dashboard[y][x] = 0
 
         self.current += 1 # Se aumenta la cantidad de POIs en el tablero
+        self.added_pois.append((x, y))
 
     def remove(self, x, y):
         """Remueve del tablero un POI (no modifica los valores
