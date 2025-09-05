@@ -36,7 +36,7 @@ class Ghosts:
 
         self.fog_list = [] # lista de casillas con niebla
 
-    def add_map(self, poi : POI):
+    def add_poi(self, poi : POI):
 
         self.poi = poi
 
@@ -297,9 +297,9 @@ class Ghosts:
             self.dashboard[y][x] = 1  # Coloca niebla
             self.fog_list.append((x, y))
 
-        elif self.dashboard[y][x] == 1:
-            self.dashboard[y][x] = 2  # Convierte niebla en fantasma
-            self.fog_list.remove((x, y))
+        elif self.dashboard[y][x] == 1: # Hay niebla
+            self.place_ghost(x, y) # colocar fantasma
+            self.fog_list.remove((x, y)) # remover niebla de la lista
             
         elif self.dashboard[y][x] == 2:
             self.arise(x, y)  # Realiza oleada de fantasmas
@@ -311,8 +311,16 @@ class Ghosts:
     def place_ghost(self, x, y):
         self.dashboard[y][x] = 2
 
-        self.poi # Accedes a la clase poi
-        self.poi.scared_victims # Accedes a las muertas
-        self.poi.current # Aquí eliminas un Poi
+        if (self.poi.dashboard[y][x] >= 3): # hay un POI
+            poi_value = self.poi.dashboard[y][x]
+            
+            if(poi_value == 3): # POI
+                poi_value = self.poi.pick_poi()
+            
+            if(poi_value == 4): # victima real
+                self.poi.scared_victims += 1 # sumar 1 a victimas no salvadas
+                self.poi.current -= 1 # quitar 1 punto de interes actual
+            elif(poi_value == 5): # falsa alarma
+                self.poi.current -= 1 # quitar 1 punto de interes actual
 
-        # TODO: Verificar si en esa casilla hay un poi
+            self.poi.dashboard[y][x] = 0 # quitar poi del tablero
