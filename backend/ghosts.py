@@ -315,12 +315,9 @@ class Ghosts:
             poi_value = self.poi.dashboard[y][x]
             
             if(poi_value == 3): # POI
-                poi_value = self.poi.pick_poi()
+                poi_value = self.poi.pick_poi(x, y) # Obtiene el poi que se reveló
             
             if(poi_value == 4): # victima real
                 self.poi.scared_victims += 1 # sumar 1 a victimas no salvadas
-                self.poi.current -= 1 # quitar 1 punto de interes actual
-            elif(poi_value == 5): # falsa alarma
-                self.poi.current -= 1 # quitar 1 punto de interes actual
 
-            self.poi.dashboard[y][x] = 0 # quitar poi del tablero
+            self.poi.remove_poi(x, y) # quitar POI del tablero y restar cantidad de actuales

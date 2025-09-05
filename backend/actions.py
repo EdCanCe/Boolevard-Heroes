@@ -232,8 +232,7 @@ class MoveWithVictim(Action):
         # Verifica si acaba de salvar a la persona
         if self.action_x in [0, 10] or self.action_y in [0, 8]:
             self.hero.map.poi.rescued_victims += 1
-            self.hero.map.poi.current -= 1
-            self.hero.map.poi.dashboard[self.current_y][self.current_x] = 0
+            self.hero.map.poi.remove_poi(self.action_x, self.action_y) # Modifica el tablero y le resta a los POIs actuales
 
         # TODO: Añadir lo correspondiente al JSON
 

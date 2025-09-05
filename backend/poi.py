@@ -41,7 +41,7 @@ class POI:
         self.rescued_victims = 0
         self.scared_victims = 0
 
-    def pick_poi(self):
+    def pick_poi(self, x, y):
         """Selecciona un POI aleatoriamente y lo elimina del vector.
 
         Returns:
@@ -52,18 +52,20 @@ class POI:
 
         # Mezcla el vector y selecciona el primer POI
         np.random.shuffle(self.poi_list)
-        self.poi_value = self.poi_list[0]
+        poi_value = self.poi_list[0]
 
         # Elimina el POI seleccionado del vector
         self.poi_list = np.delete(self.poi_list, 0)
-        return self.poi_value
+
+        # TODO: Se añade algo que indique al json que se reveló
+
+        self.dashboard[y][x] = poi_value # Se le pone a dicha posición el valor del poi
+
+        return poi_value
 
     def place_poi(self):
-        """Coloca un POI en el tablero.
+        """Coloca un POI sin saber qué es en el tablero."""
 
-        Returns:
-            int: -1 si no se pudo colocar el POI, o none si se colocó correctamente.
-        """
         x, y = self.ghosts.generate_coords()  # Genera coordenadas aleatorias
 
         # Busca una casilla libre en el tablero
@@ -75,8 +77,22 @@ class POI:
         if self.ghosts.dashboard[y][x] in [1, 2]:
             # Si la casilla contiene ciertos valores de ghosts, los elimina
             self.ghosts.dashboard[y][x] = 0
+
+        self.current += 1 # Se aumenta la cantidad de POIs en el tablero
+
+    def remove_poi(self, x, y):
+        """Remueve del tablero un POI (no modifica los valores
+        de falsos y víctimas)
+        """
         
+        self.current -= 1
+        self.dashboard[y][x] = 0  # Remueve el POI
+        
+        # TODO: añadir al JSON que se quitó un poi
+
     def move_poi(self, old_x, old_y, new_x, new_y):
         """Mueve un POI a otra casilla."""
         
         self.dashboard[old_y][old_x], self.dashboard[new_y][new_x] = self.dashboard[new_y][new_x], self.dashboard[old_y][old_x]
+
+        # TODO: añadir al JSON que se movió el poi

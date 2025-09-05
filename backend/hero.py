@@ -57,6 +57,8 @@ class Hero(Agent):
                     if action.do_action(): # Verifica que se haya completado
                         break
 
+        # Cambiar el ciclo, mejor tenerlo afuera, y que dentro haya una u otra. ya que independientemente, al final de el subturno, va a tener que revelar pois en caso de que haya, y añadir los que falten si es que hay menos de 3
+
         else:
             print("")
             
