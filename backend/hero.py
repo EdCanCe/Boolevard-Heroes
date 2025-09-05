@@ -36,6 +36,8 @@ class Hero(Agent):
             y (int): La coordenada en Y.
         """
         self.map.heroes.move_agent((x, y))
+        self.x = x
+        self.y = y
 
     def step(self):
         """Realiza un turno."""
@@ -46,10 +48,10 @@ class Hero(Agent):
 
         self.action_points = self.stored_action_points + 4 # Se actualizan sus puntos de acción
 
-        # Verifica si se hace un movimiento naive, o con strat
-        if self.map.naiveSimulation:
-            # Realiza acciones hasta quedarse sin puntos
-            while self.action_points > 0:
+        # Realiza acciones hasta quedarse sin puntos
+        while self.action_points > 0:
+            # Verifica si se hace un movimiento naive, o con strat
+            if self.map.naiveSimulation: # Simulación naive
                 possible_actions = ActionList.generate_list(self)
 
                 np.random.shuffle(possible_actions)
@@ -58,10 +60,32 @@ class Hero(Agent):
                 for action in possible_actions:
                     if action.do_action(): # Verifica que se haya completado
                         break
+            else: # Simulación con estrategia
+                print("")
 
-        # Cambiar el ciclo, mejor tenerlo afuera, y que dentro haya una u otra. ya que independientemente, al final de el subturno, va a tener que revelar pois en caso de que haya, y añadir los que falten si es que hay menos de 3
+            # Independientemente de la simulación, verifica si reveló POI
+            if self.map.poi.get(self.x, self.y) == 3:
+                if self.map.poi.pick(self.x, self.y) == 4: # Si es una víctima real
+                    if not self.has_victim: # En caso de que no lleve a nadie
+                        self.has_victim = True
+                        self.map.poi.willBeRescued(self.x, self.y) # Quito en el mapa la víctima
+                else: # Si es una falsa alarma
+                    self.map.poi.remove(self.x, self.y)
 
-        else:
-            print("")
-            
-        # TODO: Independientemente del tipo de simulación, se tiene que colocar fuego y verificar pois
+            elif self.map.poi.get(self.x, self.y) == 4 and not self.has_victim: # Que alguien más lo reveló pero no lo agarró
+                self.has_victim = True
+                self.map.poi.willBeRescued(self.x, self.y) # Quito en el mapa la víctima
+
+
+        # Después de los movimientos del héroe, finalizo el turno
+        self.map.ghosts.place_fog() # Coloca la niebla
+
+        while self.map.poi.current < 3: # Coloca POIs si es que hay menos de 3
+            self.map.poi.place(self.map.heroes)
+
+        if self.map.ghosts.get_on(self.x, self.y): # Si se extendieron los fantasmas a mi casilla
+            if self.has_victim: # Si estaba con una víctima, se asusta
+                self.map.poi.scared_victims += 1
+                self.has_victim = False
+
+            # TODO: Función para mover al héroe a la casilla de spawn más cercana

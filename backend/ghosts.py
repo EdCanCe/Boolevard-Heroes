@@ -292,8 +292,11 @@ class Ghosts:
                     break
 
     # Colocación de niebla de cada turno
-    def place_fog(self, x, y):
+    def place_fog(self):
         """Coloca niebla o fantasma según el estado actual de la casilla."""
+
+        (x, y) = self.generate_coords()
+
         if self.dashboard[y][x] == 0:
             self.dashboard[y][x] = 1  # Coloca niebla
             self.fog_list.append((x, y))
@@ -310,15 +313,17 @@ class Ghosts:
 
     # Colocación de fantasma en una casilla
     def place_ghost(self, x, y):
+        """Coloca un fantasma en una casilla."""
+
         self.dashboard[y][x] = 2
 
-        if (self.poi.dashboard[y][x] >= 3): # hay un POI
+        if self.poi.dashboard[y][x] >= 3: # hay un POI
             poi_value = self.poi.dashboard[y][x]
             
-            if(poi_value == 3): # POI
-                poi_value = self.poi.pick_poi(x, y) # Obtiene el poi que se reveló
+            if(poi_value == 3): # POI sin descubrir
+                poi_value = self.poi.pick(x, y) # Obtiene el poi que se reveló
             
             if(poi_value == 4): # victima real
                 self.poi.scared_victims += 1 # sumar 1 a victimas no salvadas
 
-            self.poi.remove_poi(x, y) # quitar POI del tablero y restar cantidad de actuales
+            self.poi.remove(x, y) # quitar POI del tablero y restar cantidad de actuales

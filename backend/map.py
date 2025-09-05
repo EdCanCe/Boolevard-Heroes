@@ -15,6 +15,7 @@ class Map(Model):
         Args:
             naiveSimulation (bool): Bandera que dicta si el modelo es naive o con strat.
         """
+
         super().__init__()
 
         self.schedule = BaseScheduler(self)
@@ -40,17 +41,40 @@ class Map(Model):
         ]
 
         # Se añaden los héroes al tablero
+        self.heroes_array = [Hero]
         for position in self.initial_positions:
             hero = Hero(self)
+            (hero.x, hero.y) = position
             self.heroes.place_agent(hero, position)
+            self.heroes_array.append(hero)
             self.schedule.add(hero)
             print(hero.pos)
 
+        self.current_hero = 0
+
+    # ? Verificar si se va a quedar step(Todo el turno) o turn(Solo un héroe)
     def step(self):
-        """Cada ronda que se hace en la simulación"""
+        """Realiza una ronda completa de turnos."""
+
         self.schedule.step() # Ejecuta un turno en cada agente
 
+    def turn(self):
+        """Realiza únicamente el turno del próximo héroe."""
+
+        self.heroes_array[self.current_hero].step()
+        self.current_hero = (self.current_hero + 1) % 6
+
     def game_over(self):
-        if self.damage_points >= 26:
+        """Verifica si con el estado actual del tablero, el
+        juego ya acabó o aún no.
+        """
+
+        if self.damage_points >= 24 or self.poi.scared_victims >= 4:
+            self.win = False
             return True
-        # TODO: Poner más condiciones para terminar el juego
+        
+        if self.poi.rescued_victims >= 7:
+            self.win = True
+            return True
+        
+        return False
