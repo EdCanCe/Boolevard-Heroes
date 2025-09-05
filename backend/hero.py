@@ -88,4 +88,18 @@ class Hero(Agent):
                 self.map.poi.scared_victims += 1
                 self.has_victim = False
 
-            # TODO: Función para mover al héroe a la casilla de spawn más cercana
+            self.to_closest_spawn_point() # Lo lleva al spawnpoint
+
+    def to_closest_spawn_point(self):
+        """Mueve el héroe al spawn point más cercano."""
+
+        closest_spawn_point = (0, 0, 1000)
+
+        # Busca la distancia más corta entre los spawnpoints
+        for spawn_point in self.map.spawn_points:
+            distance = abs(spawn_point[0] - self.x) + abs(spawn_point[1] - self.y) # Obtiene la distancia manhattan
+
+            if distance < closest_spawn_point[2]: # Verifica que sea más cercano
+                closest_spawn_point = (spawn_point[0], spawn_point[1], distance)
+
+        self.update_position(closest_spawn_point[0], closest_spawn_point[1])

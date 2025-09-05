@@ -40,6 +40,17 @@ class Map(Model):
             (5, 0)
         ]
 
+        self.spawn_points = [
+            (6, 0),
+            (5, 0),
+            (9, 4),
+            (9, 3),
+            (3, 7),
+            (4, 7),
+            (0, 3),
+            (0, 4),
+        ]
+
         # Se añaden los héroes al tablero
         self.heroes_array = [Hero]
         for position in self.initial_positions:
