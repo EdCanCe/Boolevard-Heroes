@@ -26,6 +26,7 @@ class Map(Model):
         self.poi = POI(self.ghosts)
         self.ghosts.add_poi(self.poi)
         self.heroes = MultiGrid(10, 8, torus = False)
+        self.num_steps = 0
 
         self.damage_points = 0 # El daño actual del mapa
         self.naiveSimulation = naiveSimulation
@@ -75,6 +76,7 @@ class Map(Model):
 
         self.heroes_array[self.current_hero].step()
         self.current_hero = (self.current_hero + 1) % 6
+        self.num_steps += 1
 
     def game_over(self):
         """Verifica si con el estado actual del tablero, el

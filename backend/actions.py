@@ -222,8 +222,17 @@ class Move(Action):
         super().do_action()
 
         self.hero.update_position(self.action_x, self.action_y)
+        
+        agent = {
+            "x": self.action_x,
+            "y": self.action_y,
+            "carrying": self.hero.has_victim,
+            "energy": self.hero.action_points,
+            "action": "héroe en movimiento",
+            "order": self.hero.order
+        }
 
-        # TODO: Añadir lo correspondiente al JSON
+        self.hero.json["agents"].append(agent)
 
         return True
 
@@ -241,9 +250,11 @@ class MoveWithVictim(Action):
         
         if self.hero.map.ghosts.get_on(self.action_x, self.action_y) == 2:
             return False
-        
+
         # Verifica por puntos de acción
         return self.action_points <= self.hero.action_points
+    
+    
 
     def do_action(self):
         """Mueve el héroe y la víctima a otra casilla"""
@@ -257,7 +268,16 @@ class MoveWithVictim(Action):
             self.hero.map.poi.rescued_victims += 1
             self.hero.has_victim = False # Ya que ya salvó la víctima
 
-        # TODO: Añadir lo correspondiente al JSON
+        agent = {
+            "x": self.action_x,
+            "y": self.action_y,
+            "carrying": self.hero.has_victim,
+            "energy": self.hero.action_points,
+            "action": "héroe en movimiento con victima",
+            "order": self.hero.order
+        }
+        # TODO: En unity modificar el sprite del agente segun su estado de carrying
+        self.hero.json["agents"].append(agent)
 
         return True
 
@@ -279,7 +299,16 @@ class MoveIntoGhost(Action):
         self.hero.update_position(self.action_x, self.action_y)
 
         # TODO: Verificar que no se quede dentro del fuego
-        # TODO: Añadir lo correspondiente al JSON
+        agent = {
+            "x": self.action_x,
+            "y": self.action_y,
+            "carrying": self.hero.has_victim,
+            "energy": self.hero.action_points,
+            "action": "héroe entrado al fantasma",
+            "order": self.hero.order
+        }
+
+        self.hero.json["agents"].append(agent)
 
         # ! Se modifica el método de requisito, se verifica que en la nueva posición, restándole los puntos, tenga otra posible acción. Y dentro del arreglo de generación
 
@@ -305,7 +334,23 @@ class OpenDoor(Action):
         elif self.direction == self.LEFT:
             self.hero.map.walls.set_left(self.current_x, self.current_y, 2)
 
-        # TODO: Añadir lo correspondiente al JSON
+        agent = {
+            "x": self.current_x,
+            "y": self.current_y,
+            "carrying": self.hero.has_victim,
+            "energy": self.hero.action_points,
+            "action": "héroe abre una puerta",
+            "order": self.hero.order
+        }
+
+        wall = {
+            "direction": self.direction, # direccion a la que apunta
+            "status": 2, # puerta abierta
+            "order": self.hero.order
+        }
+
+        self.hero.json["agents"].append(agent)
+        self.hero.json["walls"].append(wall)
 
         return True
 
@@ -329,7 +374,23 @@ class CloseDoor(Action):
         elif self.direction == self.LEFT:
             self.hero.map.walls.set_left(self.current_x, self.current_y, 3)
 
-        # TODO: Añadir lo correspondiente al JSON
+        agent = {
+            "x": self.current_x,
+            "y": self.current_y,
+            "carrying": self.hero.has_victim,
+            "energy": self.hero.action_points,
+            "action": "héroe cierra una puerta",
+            "order": self.hero.order
+        }
+
+        wall = {
+            "direction": self.direction, # direccion a la que apunta
+            "status": 3, # puerta cerrado
+            "order": self.hero.order
+        }
+
+        self.hero.json["agents"].append(agent)
+        self.hero.json["walls"].append(wall)
 
         return True
 
@@ -355,7 +416,23 @@ class DamageWall(Action):
 
         self.hero.map.damage_points += 1
 
-        # TODO: Añadir lo correspondiente al JSON
+        agent = {
+            "x": self.current_x,
+            "y": self.current_y,
+            "carrying": self.hero.has_victim,
+            "energy": self.hero.action_points,
+            "action": "héroe dañó una pared",
+            "order": self.hero.order
+        }
+
+        wall = {
+            "direction": self.direction, # direccion a la que apunta
+            "status": 0.5, # pared dañada
+            "order": self.hero.order
+        }
+
+        self.hero.json["agents"].append(agent)
+        self.hero.json["walls"].append(wall)
 
         return True
 
@@ -381,7 +458,23 @@ class DestroyWall(Action):
 
         self.hero.map.damage_points += 1
 
-        # TODO: Añadir lo correspondiente al JSON
+        agent = {
+            "x": self.current_x,
+            "y": self.current_y,
+            "carrying": self.hero.has_victim,
+            "energy": self.hero.action_points,
+            "action": "héroe ha tumbado una pared",
+            "order": self.hero.order
+        }
+
+        wall = {
+            "direction": self.direction, # direccion a la que apunta
+            "status": 0, # pared destruida
+            "order": self.hero.order
+        }
+
+        self.hero.json["agents"].append(agent)
+        self.hero.json["walls"].append(wall)
 
         return True
 
@@ -398,7 +491,24 @@ class ClearFog(Action):
 
         self.hero.map.ghosts.set_on(self.action_x, self.action_y, 0)
 
-        # TODO: Añadir lo correspondiente al JSON
+        agent = {
+            "x": self.current_x,
+            "y": self.current_y,
+            "carrying": self.hero.has_victim,
+            "energy": self.hero.action_points,
+            "action": "héroe dispersa una niebla",
+            "order": self.hero.order
+        }
+
+        ghost = {
+            "x": self.action_x,
+            "y": self.action_y,
+            "status": 0, # sin niebla
+            "order": self.hero.order
+        }
+
+        self.hero.json["agents"].append(agent)
+        self.hero.json["ghosts"].append(ghost)
 
         return True
 
@@ -415,7 +525,24 @@ class ScareGhost(Action):
 
         self.hero.map.ghosts.set_on(self.action_x, self.action_y, 1)
 
-        # TODO: Añadir lo correspondiente al JSON
+        agent = {
+            "x": self.current_x,
+            "y": self.current_y,
+            "carrying": self.hero.has_victim,
+            "energy": self.hero.action_points,
+            "action": "héroe ahuyenta un fantasma a niebla",
+            "order": self.hero.order
+        }
+
+        ghost = {
+            "x": self.action_x,
+            "y": self.action_y,
+            "status": 1, # establecer niebla
+            "order": self.hero.order
+        }
+
+        self.hero.json["agents"].append(agent)
+        self.hero.json["ghosts"].append(ghost)
 
         return True
 
@@ -432,7 +559,24 @@ class RemoveGhost(Action):
 
         self.hero.map.ghosts.set_on(self.action_x, self.action_y, 0)
 
-        # TODO: Añadir lo correspondiente al JSON
+        agent = {
+            "x": self.current_x,
+            "y": self.current_y,
+            "carrying": self.hero.has_victim,
+            "energy": self.hero.action_points,
+            "action": "héroe ahuyenta un fantasma por completo",
+            "order": self.hero.order
+        }
+
+        ghost = {
+            "x": self.action_x,
+            "y": self.action_y,
+            "status": 0, # sin niebla
+            "order": self.hero.order
+        }
+
+        self.hero.json["agents"].append(agent)
+        self.hero.json["ghosts"].append(ghost)
 
         return True
 
@@ -452,6 +596,15 @@ class DoNothing(Action):
         self.hero.stored_action_points = min(self.hero.action_points, 4)
         self.hero.action_points = 0
 
-        # TODO: Añadir lo correspondiente al JSON
+        agent = {
+            "x": self.current_x,
+            "y": self.current_y,
+            "carrying": self.hero.has_victim,
+            "energy": self.hero.action_points,
+            "action": "héroe espera en su casilla",
+            "order": self.hero.order
+        }
+
+        self.hero.json["agents"].append(agent)
 
         return True

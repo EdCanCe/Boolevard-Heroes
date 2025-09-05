@@ -1,5 +1,6 @@
 from mesa import Agent
 import numpy as np
+import json
 
 # Con ChatGPT se encontró como evitar importes circulares
 # No ayudó a la lógica del código, solo a eso.
@@ -28,6 +29,9 @@ class Hero(Agent):
         self.stored_action_points = 0
         self.has_victim = False
 
+        # Json utilizado para mandar datos
+        self.json = {}
+
     def update_position(self, x, y):
         """Modifica la posición del héroe
 
@@ -49,6 +53,19 @@ class Hero(Agent):
             return
 
         self.action_points = self.stored_action_points + 4 # Se actualizan sus puntos de acción
+
+        self.json = { # Json que se va a mandar
+            "num_steps": 0,
+            "saved_victims": 0,
+            "scared_victims": 0,
+            "damaged_points": 0,
+            "agents":[],
+            "ghosts":[],
+            "walls":[],
+            "pois":[]
+        }
+
+        self.order = 0 # orden dentro del turno en que se realiza una accion
 
         # Realiza acciones hasta quedarse sin puntos
         while self.action_points > 0:
@@ -80,6 +97,8 @@ class Hero(Agent):
             elif self.map.poi.get(self.x, self.y) == 4 and not self.has_victim: # Que alguien más lo reveló pero no lo agarró
                 self.has_victim = True
                 self.map.poi.willBeRescued(self.x, self.y) # Quito en el mapa la víctima
+
+            self.order += 1
 
         # Después de los movimientos del héroe, finalizo el turno
         self.map.ghosts.place_fog() # Coloca la niebla
