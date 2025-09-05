@@ -1,6 +1,7 @@
 import numpy as np
-from poi import *
 from collections import deque
+
+from poi import *
 
 class Ghosts:
     """Gestiona la niebla y los fantasmas en el tablero de juego.

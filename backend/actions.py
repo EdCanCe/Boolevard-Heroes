@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from hero import *
+
+from hero import Hero
 
 class ActionList:
     """Genera la lista de acciones posibles

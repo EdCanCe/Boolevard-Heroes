@@ -1,10 +1,11 @@
+from mesa import Model
+from mesa.space import MultiGrid
+from mesa.time import BaseScheduler
+
 from walls import *
 from ghosts import *
 from poi import *
 from hero import *
-from mesa import Model
-from mesa.space import MultiGrid
-from mesa.time import BaseScheduler
 
 class Map(Model):
     """El mapa donde se correrá la simulación."""
@@ -22,7 +23,7 @@ class Map(Model):
         self.walls = Walls()
         self.ghosts = Ghosts(self.walls)
         self.poi = POI(self.ghosts)
-        self.ghosts.add_map(self.poi)
+        self.ghosts.add_poi(self.poi)
         self.heroes = MultiGrid(10, 8, torus = False)
 
         self.damage_points = 0 # El daño actual del mapa
@@ -53,5 +54,3 @@ class Map(Model):
         if self.damage_points >= 26:
             return True
         # TODO: Poner más condiciones para terminar el juego
-        
-simulation = Map(0)

@@ -1,7 +1,9 @@
 from mesa import Agent
 import numpy as np
-from typing import TYPE_CHECKING
 
+# Con ChatGPT se encontró como evitar importes circulares
+# No ayudó a la lógica del código, solo a eso.
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from map import *
     from actions import *
