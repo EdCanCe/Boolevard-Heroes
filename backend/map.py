@@ -30,6 +30,8 @@ class Map(Model):
         self.damage_points = 0 # El daño actual del mapa
         self.naiveSimulation = naiveSimulation
 
+        self.win = False
+
         # Las posiciones iniciales de los héroes
         self.initial_positions = [
             (6, 0),
@@ -52,18 +54,17 @@ class Map(Model):
         ]
 
         # Se añaden los héroes al tablero
-        self.heroes_array = [Hero]
+        self.heroes_array = []
         for position in self.initial_positions:
             hero = Hero(self)
             (hero.x, hero.y) = position
             self.heroes.place_agent(hero, position)
             self.heroes_array.append(hero)
             self.schedule.add(hero)
-            print(hero.pos)
 
         self.current_hero = 0
 
-    # ? Verificar si se va a quedar step(Todo el turno) o turn(Solo un héroe)
+    # ? Verificar si se va a quedar step(Todo el ronda) o turn(Solo un héroe)
     def step(self):
         """Realiza una ronda completa de turnos."""
 
@@ -80,7 +81,7 @@ class Map(Model):
         juego ya acabó o aún no.
         """
 
-        if self.damage_points >= 24 or self.poi.scared_victims >= 4:
+        if self.poi.scared_victims >= 4 or self.damage_points >= 24:
             self.win = False
             return True
         

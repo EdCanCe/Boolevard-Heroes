@@ -61,7 +61,7 @@ class Walls:
 
     def get_up(self, x, y):
         """Devuelve el estado de la pared/puerta arriba de (x, y)."""
-        if y <= 0:
+        if y <= 0 or y >= 8:
             return -1  # Fuera de límites
         return self.horizontal[y - 1][x]
 
@@ -86,7 +86,7 @@ class Walls:
 
     def set_up(self, x, y, value):
         """Asigna un valor a la pared/puerta arriba de (x, y)."""
-        if y <= 0:
+        if y <= 0 or y >= 8:
             return  # Fuera de límites
         self.horizontal[y - 1][x] = value
 

@@ -35,12 +35,14 @@ class Hero(Agent):
             x (int): La coordenada en X.
             y (int): La coordenada en Y.
         """
-        self.map.heroes.move_agent((x, y))
+        self.map.heroes.move_agent(self, (x, y))
         self.x = x
         self.y = y
 
     def step(self):
         """Realiza un turno."""
+
+        from actions import ActionList
 
         # Verifica si aún puede jugar
         if self.map.game_over():
@@ -60,7 +62,10 @@ class Hero(Agent):
                 for action in possible_actions:
                     if action.do_action(): # Verifica que se haya completado
                         break
-            else: # Simulación con estrategia
+                    else: # Si no pudo hacerla, restaura los puntos de acción
+                        action.restore_action_points()
+
+            else: # TODO: Simulación con estrategia
                 print("")
 
             # Independientemente de la simulación, verifica si reveló POI
@@ -76,7 +81,6 @@ class Hero(Agent):
                 self.has_victim = True
                 self.map.poi.willBeRescued(self.x, self.y) # Quito en el mapa la víctima
 
-
         # Después de los movimientos del héroe, finalizo el turno
         self.map.ghosts.place_fog() # Coloca la niebla
 
@@ -89,6 +93,9 @@ class Hero(Agent):
                 self.has_victim = False
 
             self.to_closest_spawn_point() # Lo lleva al spawnpoint
+            self.stored_action_points = 0 # Se eliminan puntos de acción guardados
+
+        # TODO: Aquí se crearía un JSON que se regresaría en la función
 
     def to_closest_spawn_point(self):
         """Mueve el héroe al spawn point más cercano."""

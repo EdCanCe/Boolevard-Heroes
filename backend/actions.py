@@ -23,7 +23,7 @@ class ActionList:
 
         (x, y) = hero.pos
 
-        possible_actions = [Action] # Aquí se guardarán las posibles acciontes
+        possible_actions = [] # Aquí se guardarán las posibles acciontes
 
         # En caso de que tenga una víctima
         if hero.has_victim:
@@ -47,17 +47,17 @@ class ActionList:
                 if hero.map.ghosts.get_right(x, y) == 2:
                     possible_actions.append(MoveIntoGhost(2, hero, 1))
                 else:
-                    possible_actions.append(Move(1, hero, 0))
+                    possible_actions.append(Move(1, hero, 1))
             if hero.map.walls.get_down(x, y) in free_path:
                 if hero.map.ghosts.get_down(x, y) == 2:
                     possible_actions.append(MoveIntoGhost(2, hero, 2))
                 else:
-                    possible_actions.append(Move(1, hero, 0))
+                    possible_actions.append(Move(1, hero, 2))
             if hero.map.walls.get_left(x, y) in free_path:
                 if hero.map.ghosts.get_left(x, y) == 2:
                     possible_actions.append(MoveIntoGhost(2, hero, 3))
                 else:
-                    possible_actions.append(Move(1, hero, 0))
+                    possible_actions.append(Move(1, hero, 3))
 
         # Se añaden las posibilidades de abrir puertas
         if hero.map.walls.get_up(x, y) == 3:
@@ -130,7 +130,7 @@ class ActionList:
         if hero.map.ghosts.get_on(x, y) != 2:
             possible_actions.append(DoNothing(0, hero, 4))
 
-        filtered_actions = [Action] # Se guardan las acciones verdaderamente posibles
+        filtered_actions = [] # Se guardan las acciones verdaderamente posibles
 
         # Se filtran las acciones a únicamente las que se puedan usar
         for action in possible_actions:
@@ -164,19 +164,7 @@ class Action(ABC):
         self.LEFT = 3
         self.SAME = 4
 
-    @abstractmethod
-    def is_possible(self):
-        """Verifica que la acción sea válida"""
-        return self.action_points <= self.hero.action_points
-    
-        pass
-
-    @abstractmethod
-    def do_action(self):
-        """Método abstracto para realizar la acción."""
-
-        self.hero.action_points -= self.action_points
-
+    def update_coords(self):
         (self.current_x, self.current_y) = self.hero.pos
         (self.action_x, self.action_y) = self.hero.pos
 
@@ -190,6 +178,33 @@ class Action(ABC):
         elif self.direction == self.LEFT:
             self.action_x -= 1
 
+    def restore_action_points(self):
+        """Se restauran los puntos de acción del héroe."""
+
+        self.hero.action_points += self.action_points
+
+    @abstractmethod
+    def is_possible(self):
+        """Verifica que la acción sea válida"""
+    
+        (self.current_x, self.current_y) = self.hero.pos
+        (self.action_x, self.action_y) = self.hero.pos
+
+        self.update_coords()
+
+        if self.action_x in [-1, 10] or self.action_y in [-1, 8]:
+            return False
+    
+        return self.action_points <= self.hero.action_points
+
+    @abstractmethod
+    def do_action(self):
+        """Método abstracto para realizar la acción."""
+
+        self.hero.action_points -= self.action_points
+
+        # TODO: Verifica si alguna de las coordenadas sale del mapa
+
         pass
 
 class Move(Action):
@@ -197,6 +212,9 @@ class Move(Action):
     no esté cargando con una víctima y la casilla no
     tenga fantasmas.
     """
+
+    def is_possible(self):
+        return super().is_possible()
 
     def do_action(self):
         """Mueve el héroe a otra casilla"""
@@ -216,6 +234,11 @@ class MoveWithVictim(Action):
 
     def is_possible(self):
         # Verifica que la casilla no tenga fantasmas
+        self.update_coords()
+
+        if self.action_x in [-1, 10] or self.action_y in [-1, 8]:
+            return False
+        
         if self.hero.map.ghosts.get_on(self.action_x, self.action_y) == 2:
             return False
         
@@ -243,22 +266,30 @@ class MoveIntoGhost(Action):
     fantasma dentro de ella.
     """
 
+    def is_possible(self):
+        return super().is_possible()
+
     def do_action(self):
         """Mueve al héroe a la casilla con el fantasma."""
 
         super().do_action()
+
+        return False
 
         self.hero.update_position(self.action_x, self.action_y)
 
         # TODO: Verificar que no se quede dentro del fuego
         # TODO: Añadir lo correspondiente al JSON
 
-        # ! Se modifica el método de requisito, se verifica que en la nueva posición, restándole los puntos, tenga otra posible acción. Y dentro del arreglo de generación, NO se añade el "no hacer nada" si está dentro del fuego
+        # ! Se modifica el método de requisito, se verifica que en la nueva posición, restándole los puntos, tenga otra posible acción. Y dentro del arreglo de generación
 
         # ! O mas bien añadir una especie de bfs dentro de la generación del arreglo/
 
 class OpenDoor(Action):
     """Abre una puerta alrededor del héroe."""
+
+    def is_possible(self):
+        return super().is_possible()
 
     def do_action(self):
         """Abre la puerta."""
@@ -281,6 +312,9 @@ class OpenDoor(Action):
 class CloseDoor(Action):
     """Cierra una puerta alrededor del héroe."""
 
+    def is_possible(self):
+        return super().is_possible()
+
     def do_action(self):
         """Cierra la puerta."""
 
@@ -301,6 +335,9 @@ class CloseDoor(Action):
 
 class DamageWall(Action):
     """Daña una pared alrededor del héroe."""
+
+    def is_possible(self):
+        return super().is_possible()
 
     def do_action(self):
         """Daña la pared."""
@@ -325,6 +362,9 @@ class DamageWall(Action):
 class DestroyWall(Action):
     """Destruye una pared alrededor del héroe."""
 
+    def is_possible(self):
+        return super().is_possible()
+
     def do_action(self):
         """Destruye la pared."""
 
@@ -348,12 +388,15 @@ class DestroyWall(Action):
 class ClearFog(Action):
     """Dispersa una niebla alrededor del héroe."""
 
+    def is_possible(self):
+        return super().is_possible()
+
     def do_action(self):
         """Dispersa la niebla alrededor del héroe."""
 
         super().do_action()
 
-        self.hero.map.ghosts.set_in(self.action_x, self.action_y, 0)
+        self.hero.map.ghosts.set_on(self.action_x, self.action_y, 0)
 
         # TODO: Añadir lo correspondiente al JSON
 
@@ -362,12 +405,15 @@ class ClearFog(Action):
 class ScareGhost(Action):
     """Ahuyenta un fantasma alrededor del héroe."""
 
+    def is_possible(self):
+        return super().is_possible()
+    
     def do_action(self):
         """Ahuyenta el fantasma."""
 
         super().do_action()
 
-        self.hero.map.ghosts.set_in(self.action_x, self.action_y, 1)
+        self.hero.map.ghosts.set_on(self.action_x, self.action_y, 1)
 
         # TODO: Añadir lo correspondiente al JSON
 
@@ -376,12 +422,15 @@ class ScareGhost(Action):
 class RemoveGhost(Action):
     """Remueve un fantasma alrededor del héroe."""
 
+    def is_possible(self):
+        return super().is_possible()
+
     def do_action(self):
         """Remueve el fantasma."""
 
         super().do_action()
 
-        self.hero.map.ghosts.set_in(self.action_x, self.action_y, 0)
+        self.hero.map.ghosts.set_on(self.action_x, self.action_y, 0)
 
         # TODO: Añadir lo correspondiente al JSON
 
@@ -392,12 +441,16 @@ class DoNothing(Action):
     con intención de iniciar el siguiente turno.
     """
 
+    def is_possible(self):
+        return super().is_possible()
+
     def do_action(self):
         """Guarda los puntos de acción."""
 
         super().do_action()
 
         self.hero.stored_action_points = min(self.hero.action_points, 4)
+        self.hero.action_points = 0
 
         # TODO: Añadir lo correspondiente al JSON
 

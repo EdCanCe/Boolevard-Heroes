@@ -282,7 +282,8 @@ class Ghosts:
                     break
                 elif self.dashboard[new_y][new_x] == 1: # celda con niebla
                     self.place_ghost(new_x, new_y) # pone fantasma
-                    self.fog_list.remove((new_x, new_y)) # quita lista de niebla
+                    if (new_x, new_y) in self.fog_list:
+                        self.fog_list.remove((new_x, new_y)) # quita lista de niebla
                     break
                 elif self.dashboard[new_y][new_x] == 2: # celda con fantasma
                     current_x, current_y = (new_x, new_y) # establece como actual
@@ -303,7 +304,8 @@ class Ghosts:
 
         elif self.dashboard[y][x] == 1: # Hay niebla
             self.place_ghost(x, y) # colocar fantasma
-            self.fog_list.remove((x, y)) # remover niebla de la lista
+            if (x, y) in self.fog_list:
+                self.fog_list.remove((x, y))
             
         elif self.dashboard[y][x] == 2:
             self.arise(x, y)  # Realiza oleada de fantasmas
