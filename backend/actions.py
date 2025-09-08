@@ -1,6 +1,12 @@
-from abc import ABC, abstractmethod
+from imports import *
 
-from hero import Hero
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from walls import *
+    from poi import *
+    from ghosts import *
+    from map import *
+    from hero import *
 
 class ActionList:
     """Genera la lista de acciones posibles
@@ -8,7 +14,7 @@ class ActionList:
     dado.
     """
     @staticmethod
-    def generate_list(hero: Hero):
+    def generate_list(hero: "Hero"):
         """Genera la lista de acciones que se pueden
         realizar en el turno actual.
 
@@ -226,6 +232,7 @@ class Move(Action):
         agent = {
             "x": self.action_x,
             "y": self.action_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe en movimiento",
@@ -271,12 +278,16 @@ class MoveWithVictim(Action):
         agent = {
             "x": self.action_x,
             "y": self.action_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe en movimiento con victima",
             "order": self.hero.order
         }
+
         # TODO: En unity modificar el sprite del agente segun su estado de carrying
+        # TODO: En caso de que si, mostrar un mensaje de cambio
+
         self.hero.json["agents"].append(agent)
 
         return True
@@ -287,6 +298,7 @@ class MoveIntoGhost(Action):
     """
 
     def is_possible(self):
+        return False
         return super().is_possible()
 
     def do_action(self):
@@ -294,14 +306,13 @@ class MoveIntoGhost(Action):
 
         super().do_action()
 
-        return False
-
         self.hero.update_position(self.action_x, self.action_y)
 
         # TODO: Verificar que no se quede dentro del fuego
         agent = {
             "x": self.action_x,
             "y": self.action_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe entrado al fantasma",
@@ -337,6 +348,7 @@ class OpenDoor(Action):
         agent = {
             "x": self.current_x,
             "y": self.current_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe abre una puerta",
@@ -346,7 +358,9 @@ class OpenDoor(Action):
         wall = {
             "direction": self.direction, # direccion a la que apunta
             "status": 2, # puerta abierta
-            "order": self.hero.order
+            "order": self.hero.order,
+            "x": self.current_x,
+            "y": self.current_y
         }
 
         self.hero.json["agents"].append(agent)
@@ -377,6 +391,7 @@ class CloseDoor(Action):
         agent = {
             "x": self.current_x,
             "y": self.current_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe cierra una puerta",
@@ -386,7 +401,9 @@ class CloseDoor(Action):
         wall = {
             "direction": self.direction, # direccion a la que apunta
             "status": 3, # puerta cerrado
-            "order": self.hero.order
+            "order": self.hero.order,
+            "x": self.current_x,
+            "y": self.current_y
         }
 
         self.hero.json["agents"].append(agent)
@@ -419,6 +436,7 @@ class DamageWall(Action):
         agent = {
             "x": self.current_x,
             "y": self.current_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe dañó una pared",
@@ -428,7 +446,9 @@ class DamageWall(Action):
         wall = {
             "direction": self.direction, # direccion a la que apunta
             "status": 0.5, # pared dañada
-            "order": self.hero.order
+            "order": self.hero.order,
+            "x": self.current_x,
+            "y": self.current_y
         }
 
         self.hero.json["agents"].append(agent)
@@ -461,6 +481,7 @@ class DestroyWall(Action):
         agent = {
             "x": self.current_x,
             "y": self.current_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe ha tumbado una pared",
@@ -470,7 +491,9 @@ class DestroyWall(Action):
         wall = {
             "direction": self.direction, # direccion a la que apunta
             "status": 0, # pared destruida
-            "order": self.hero.order
+            "order": self.hero.order,
+            "x": self.current_x,
+            "y": self.current_y
         }
 
         self.hero.json["agents"].append(agent)
@@ -482,6 +505,14 @@ class ClearFog(Action):
     """Dispersa una niebla alrededor del héroe."""
 
     def is_possible(self):
+        (self.current_x, self.current_y) = self.hero.pos
+        (self.action_x, self.action_y) = self.hero.pos
+
+        self.update_coords()
+
+        if not (self.action_x, self.action_y) in self.hero.map.walls.get_neighbors(self.current_x, self.current_y) and (self.action_x, self.action_y) != (self.current_x, self.current_y):
+            return False
+
         return super().is_possible()
 
     def do_action(self):
@@ -491,9 +522,12 @@ class ClearFog(Action):
 
         self.hero.map.ghosts.set_on(self.action_x, self.action_y, 0)
 
+        self.hero.map.ghosts.fog_list.remove((self.action_x, self.action_y))
+
         agent = {
             "x": self.current_x,
             "y": self.current_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe dispersa una niebla",
@@ -516,6 +550,14 @@ class ScareGhost(Action):
     """Ahuyenta un fantasma alrededor del héroe."""
 
     def is_possible(self):
+        (self.current_x, self.current_y) = self.hero.pos
+        (self.action_x, self.action_y) = self.hero.pos
+
+        self.update_coords()
+
+        if not (self.action_x, self.action_y) in self.hero.map.walls.get_neighbors(self.current_x, self.current_y) and (self.action_x, self.action_y) != (self.current_x, self.current_y):
+            return False
+
         return super().is_possible()
     
     def do_action(self):
@@ -524,10 +566,12 @@ class ScareGhost(Action):
         super().do_action()
 
         self.hero.map.ghosts.set_on(self.action_x, self.action_y, 1)
+        self.hero.map.ghosts.fog_list.append((self.action_x, self.action_y))
 
         agent = {
             "x": self.current_x,
             "y": self.current_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe ahuyenta un fantasma a niebla",
@@ -550,6 +594,14 @@ class RemoveGhost(Action):
     """Remueve un fantasma alrededor del héroe."""
 
     def is_possible(self):
+        (self.current_x, self.current_y) = self.hero.pos
+        (self.action_x, self.action_y) = self.hero.pos
+
+        self.update_coords()
+
+        if not (self.action_x, self.action_y) in self.hero.map.walls.get_neighbors(self.current_x, self.current_y) and (self.action_x, self.action_y) != (self.current_x, self.current_y):
+            return False
+
         return super().is_possible()
 
     def do_action(self):
@@ -562,6 +614,7 @@ class RemoveGhost(Action):
         agent = {
             "x": self.current_x,
             "y": self.current_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe ahuyenta un fantasma por completo",
@@ -599,6 +652,7 @@ class DoNothing(Action):
         agent = {
             "x": self.current_x,
             "y": self.current_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe espera en su casilla",
