@@ -93,7 +93,7 @@ class Hero(Agent):
                     "x": self.x,
                     "y": self.y,
                     "old_status": 3,
-                    "new_status": new_poi_value, # poi eliminado
+                    "new_status": int(new_poi_value), # poi eliminado
                     "order": self.order
                 }
 
@@ -125,7 +125,7 @@ class Hero(Agent):
             poi = {
                 "x": p[0][0],
                 "y": p[0][1],
-                "old_status": p[1],
+                "old_status": int(p[1]),
                 "new_status": 0, # poi eliminado
                 "order": self.order
             }

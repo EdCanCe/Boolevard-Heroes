@@ -98,7 +98,7 @@ class POI:
             self.ghosts.dashboard[y][x] = 0
 
         self.current += 1 # Se aumenta la cantidad de POIs en el tablero
-        self.added_pois.append((x, y), oldValue)
+        self.added_pois.append(((x, y), oldValue))
 
     def remove(self, x, y):
         """Remueve del tablero un POI (no modifica los valores

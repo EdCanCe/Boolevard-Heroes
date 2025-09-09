@@ -1,28 +1,24 @@
-from imports import *
+import requests
 
-rescued = 0
+BASE_URL = "http://127.0.0.1:5000"  # Adjust if your Flask server runs elsewhere
 
-for i in range(100):
+total_minus_ones = 0
 
-    simulation = Map(True)
+for sim in range(100):
+    # Start a new simulation
+    requests.get(f"{BASE_URL}/start/naive")
+    print(f"Simulation {sim+1} started.")
+    while True:
+        resp = requests.get(f"{BASE_URL}/turn")
+        if resp.status_code != 200:
+            print("Simulation not started or error.")
+            break
+        data = resp.json()
+        if not data:  # If the returned JSON is null or empty
+            print(f"Simulation {sim+1} ended.")
+            break
+        # Count -1 in walls[].status
+        minus_ones = sum(1 for wall in data.get("walls", []) if wall.get("status") == -1)
+        total_minus_ones += minus_ones
 
-    while not simulation.game_over():
-        json = simulation.turn()
-
-    print(f"Simulación no: {i}")
-
-    print(f"Se rescataron {simulation.poi.rescued_victims} víctimas")
-
-    print(f"Se asustaron {simulation.poi.scared_victims} víctimas")
-
-    print(f"La casa tuvo {simulation.damage_points} puntos de daño")
-    
-    print(" ")
-
-    print(f"La partida se {'ganó' if simulation.win else 'perdió'}")
-
-    rescued += simulation.poi.rescued_victims
-
-    
-
-print(f"Se rescataron en total {rescued}")
+print(f"Total times -1 appeared in walls[].status across 100 simulations: {total_minus_ones}")

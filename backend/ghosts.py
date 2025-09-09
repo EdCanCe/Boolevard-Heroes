@@ -307,7 +307,7 @@ class Ghosts:
                         side_value = 2
                         self.walls.set_down(current_x, current_y, set_value)
 
-                if value > 0:
+                if value > 0 and set_value != -1:
                     wall = {
                         "direction": side_value, # direccion a la que apunta
                         "status": set_value, # a que valor se actualiza
@@ -316,7 +316,7 @@ class Ghosts:
                         "y": current_y
                     }
 
-                    if value != 4:
+                    if value not in [2, 3, 4]:
                         self.added_damage += 1
 
                     self.json["walls"].append(wall)
@@ -388,4 +388,4 @@ class Ghosts:
                 self.poi.scared_victims += 1 # sumar 1 a victimas no salvadas
 
             self.poi.remove(x, y) # quitar POI del tablero y restar cantidad de actuales
-            self.poi.removed_pois.append((x, y), poi_value)
+            self.poi.removed_pois.append(((x, y), poi_value))
