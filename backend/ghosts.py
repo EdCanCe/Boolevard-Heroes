@@ -152,6 +152,9 @@ class Ghosts:
 
                 if self.dashboard[new_y][new_x] == 2:
                     self.place_ghost(current_x, current_y) # pone fantasma
+                    if (current_x, current_y) in self.fog_list:
+                        self.fog_list.remove((current_x, current_y))
+                    self.fog_changed = True
                     q.append((new_x, new_y))
 
     # Verificación de límites del tablero
@@ -367,8 +370,11 @@ class Ghosts:
         elif self.dashboard[y][x] == 2:
             self.arise(x, y)  # Realiza oleada de fantasmas
         
-        for (fog_x, fog_y) in self.fog_list:
-            self.spread_ghost(fog_x, fog_y)
+        self.fog_changed = True
+        while self.fog_changed:
+            self.fog_changed = False
+            for (fog_x, fog_y) in self.fog_list:
+                self.spread_ghost(fog_x, fog_y)
 
         return self.added_damage
 
