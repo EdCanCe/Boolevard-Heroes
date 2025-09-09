@@ -152,6 +152,8 @@ class Ghosts:
 
                 if self.dashboard[new_y][new_x] == 2:
                     self.place_ghost(current_x, current_y) # pone fantasma
+                    if (current_x, current_y) in self.fog_list:
+                        self.fog_list.remove((current_x, current_y))
                     self.fog_changed = True
                     q.append((new_x, new_y))
 
