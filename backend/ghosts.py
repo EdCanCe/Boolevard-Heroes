@@ -1,7 +1,12 @@
-import numpy as np
-from collections import deque
+from imports import *
 
-from poi import *
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from walls import *
+    from poi import *
+    from map import *
+    from hero import *
+    from actions import *
 
 class Ghosts:
     """Gestiona la niebla y los fantasmas en el tablero de juego.
@@ -36,8 +41,9 @@ class Ghosts:
         ]
 
         self.fog_list = [] # lista de casillas con niebla
+        self.added_damage = 0
 
-    def add_poi(self, poi : POI):
+    def add_poi(self, poi : "POI"):
 
         self.poi = poi
 
@@ -155,7 +161,7 @@ class Ghosts:
         Returns:
             bool: True si está dentro de límites, False si está fuera.
         """
-        return 1 <= x <= 8 and 1 <= y <= 6
+        return 0 <= x <= 9 and 0 <= y <= 7
 
     # Explosión/oleada de fantasmas
     def arise(self, x, y):
@@ -163,7 +169,16 @@ class Ghosts:
         en todas las direcciones.
         """
         # Arriba, derecha, abajo, izquierda
-        directions = [(0, -1), (1, 0), (0, 1), (-1, 0)]  
+        directions = [(0, -1), (1, 0), (0, 1), (-1, 0)]
+
+        ghost = {
+            "x": x,
+            "y": y,
+            "status": 2,
+            "order": self.order
+        }
+
+        self.json["ghosts"].append(ghost) # Añade la casilla donde ocurrió la explosión
 
         for diff_x, diff_y in directions:
             current_x, current_y = (x, y)
@@ -195,6 +210,9 @@ class Ghosts:
                 can_pass = False
                 can_end = False
 
+                set_value = -1 # El valor al que se actualizará la pared/puerta
+                side_value = -1 # La dirección a la que se actualizará la pared
+
                 # Manejo de paredes y puertas según su estado
                 # Pasa, daña, destruye o termina propagación según valor
                 # Derecha
@@ -202,76 +220,106 @@ class Ghosts:
                     if value == 0:
                         can_pass = True
                     elif value == 0.5:
-                        self.walls.set_right(current_x, current_y, 0)
+                        set_value = 0
                         can_end = True
                     elif value == 1:
-                        self.walls.set_right(current_x, current_y, 0.5)
+                        set_value = 0.5
                         can_end = True
-                    elif value in [2, 4]:
-                        self.walls.set_right(current_x, current_y, 4)
+                    elif value == 2:
+                        set_value = 4
                         can_pass = True
                     elif value == 3:
-                        self.walls.set_right(current_x, current_y, 4)
+                        set_value = 4
                         can_end = True
                     else:
                         can_pass = True
+
+                    if value > 0:
+                        side_value = 1
+                        self.walls.set_right(current_x, current_y, set_value)
                         
                 # Izquierda
                 elif diff_x == -1 and diff_y == 0:
                     if value == 0:
                         can_pass = True
                     elif value == 0.5:
-                        self.walls.set_left(current_x, current_y, 0)
+                        set_value = 0
                         can_end = True
                     elif value == 1:
-                        self.walls.set_left(current_x, current_y, 0.5)
+                        set_value = 0.5
                         can_end = True
-                    elif value in [2, 4]:
-                        self.walls.set_left(current_x, current_y, 4)
+                    elif value == 2:
+                        set_value = 4
                         can_pass = True
                     elif value == 3:
-                        self.walls.set_left(current_x, current_y, 4)
+                        set_value = 4
                         can_end = True
                     else:
                         can_pass = True
+
+                    if value > 0:
+                        side_value = 3
+                        self.walls.set_left(current_x, current_y, set_value)
 
                 # Arriba
                 elif diff_x == 0 and diff_y == -1:
                     if value == 0:
                         can_pass = True
                     elif value == 0.5:
-                        self.walls.set_up(current_x, current_y, 0)
+                        set_value = 0
                         can_end = True
                     elif value == 1:
-                        self.walls.set_up(current_x, current_y, 0.5)
+                        set_value = 0.5
                         can_end = True
-                    elif value in [2, 4]:
-                        self.walls.set_up(current_x, current_y, 4)
+                    elif value == 2:
+                        set_value = 4
                         can_pass = True
                     elif value == 3:
-                        self.walls.set_up(current_x, current_y, 4)
+                        set_value = 4
                         can_end = True
                     else:
                         can_pass = True
+
+                    if value > 0:
+                        side_value = 0
+                        self.walls.set_up(current_x, current_y, set_value)
                         
                 # Abajo
                 elif diff_x == 0 and diff_y == 1:
                     if value == 0:
                         can_pass = True
                     elif value == 0.5:
-                        self.walls.set_down(current_x, current_y, 0)
+                        set_value = 0
                         can_end = True
                     elif value == 1:
-                        self.walls.set_down(current_x, current_y, 0.5)
+                        set_value = 0.5
                         can_end = True
-                    elif value in [2, 4]:
-                        self.walls.set_down(current_x, current_y, 4)
+                    elif value == 2:
+                        set_value = 4
                         can_pass = True
                     elif value == 3:
-                        self.walls.set_down(current_x, current_y, 4)
+                        set_value = 4
                         can_end = True
                     else:
                         can_pass = True
+
+                    if value > 0:
+                        side_value = 2
+                        self.walls.set_down(current_x, current_y, set_value)
+
+                if value > 0 and set_value != -1:
+                    wall = {
+                        "direction": side_value, # direccion a la que apunta
+                        "status": set_value, # a que valor se actualiza
+                        "order": self.order,
+                        "x": current_x,
+                        "y": current_y
+                    }
+
+                    if value not in [2, 3, 4]:
+                        self.added_damage += 1
+
+                    self.json["walls"].append(wall)
 
                 if can_end:
                     break
@@ -293,8 +341,17 @@ class Ghosts:
                     break
 
     # Colocación de niebla de cada turno
-    def place_fog(self):
-        """Coloca niebla o fantasma según el estado actual de la casilla."""
+    def place_fog(self, json, order):
+        """Coloca niebla o fantasma según el estado actual de la casilla.
+
+        Args:
+            json (Json): El json que contiene los datos que se pasarán en el endpoint.
+            order (int): El número de orden de la acción.
+        """
+
+        self.json = json
+        self.order = order
+        self.added_damage = 0
 
         (x, y) = self.generate_coords()
 
@@ -313,6 +370,8 @@ class Ghosts:
         for (fog_x, fog_y) in self.fog_list:
             self.spread_ghost(fog_x, fog_y)
 
+        return self.added_damage
+
     # Colocación de fantasma en una casilla
     def place_ghost(self, x, y):
         """Coloca un fantasma en una casilla."""
@@ -329,4 +388,4 @@ class Ghosts:
                 self.poi.scared_victims += 1 # sumar 1 a victimas no salvadas
 
             self.poi.remove(x, y) # quitar POI del tablero y restar cantidad de actuales
-            self.poi.removed_pois.append((x, y))
+            self.poi.removed_pois.append(((x, y), poi_value))

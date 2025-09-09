@@ -1,5 +1,12 @@
-import numpy as np
-from mesa.space import MultiGrid
+from imports import *
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from walls import *
+    from ghosts import *
+    from map import *
+    from hero import *
+    from actions import *
 
 class POI:
     """Gestiona los puntos de interés (POI) en el tablero de juego.
@@ -49,6 +56,7 @@ class POI:
         Returns:
             int: Valor del POI seleccionado.
         """
+
         if len(self.poi_list) <= 0:
             return -1  # No hay POI disponibles
 
@@ -83,12 +91,14 @@ class POI:
 
         self.dashboard[y][x] = 3  # Coloca el POI en la casilla libre
 
+        oldValue = self.ghosts.dashboard[y][x]
+
         if self.ghosts.dashboard[y][x] in [1, 2]:
             # Si la casilla contiene ciertos valores de ghosts, los elimina
             self.ghosts.dashboard[y][x] = 0
 
         self.current += 1 # Se aumenta la cantidad de POIs en el tablero
-        self.added_pois.append((x, y))
+        self.added_pois.append(((x, y), oldValue))
 
     def remove(self, x, y):
         """Remueve del tablero un POI (no modifica los valores
@@ -98,18 +108,9 @@ class POI:
         self.current -= 1
         self.dashboard[y][x] = 0  # Remueve el POI
         
-        # TODO: añadir al JSON que se quitó un poi
-
     def willBeRescued(self, x, y):
         """Marca en el mapa un 0, ya que el POI lo
         llevaría el héroe
         """
 
         self.dashboard[y][x] = 0
-
-    def move(self, old_x, old_y, new_x, new_y):
-        """Mueve un POI a otra casilla."""
-        
-        self.dashboard[old_y][old_x], self.dashboard[new_y][new_x] = self.dashboard[new_y][new_x], self.dashboard[old_y][old_x]
-
-        # TODO: añadir al JSON que se movió el poi
