@@ -1,3 +1,13 @@
+from imports import *
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from poi import *
+    from ghosts import *
+    from map import *
+    from hero import *
+    from actions import *
+
 class Walls:
     """Representa el tablero de juego con paredes y puertas.
 
@@ -27,8 +37,8 @@ class Walls:
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [1, 0, 0, 3, 0, 1, 0, 0, 1, 0],
             [1, 0, 0, 1, 0, 3, 0, 0, 1, 0],
-            [3, 0, 3, 0, 0, 0, 1, 0, 1, 0],
-            [1, 0, 1, 0, 0, 0, 3, 0, 3, 0],
+            [2, 0, 3, 0, 0, 0, 1, 0, 1, 0],
+            [1, 0, 1, 0, 0, 0, 3, 0, 2, 0],
             [1, 0, 0, 0, 0, 1, 0, 1, 1, 0],
             [1, 0, 0, 0, 0, 3, 0, 3, 1, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -36,13 +46,13 @@ class Walls:
 
         # Matriz de paredes/puertas horizontales (filas)
         self.horizontal = [
-            [0, 1, 1, 1, 1, 1, 3, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 2, 1, 1, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 1, 1, 1, 1, 1, 3, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 1, 1, 1, 3, 1, 1, 1, 1, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 1, 1, 3, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 2, 1, 1, 1, 1, 1, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         ]
 

@@ -1,11 +1,12 @@
-from mesa import Model
-from mesa.space import MultiGrid
-from mesa.time import BaseScheduler
+from imports import *
 
-from walls import *
-from ghosts import *
-from poi import *
-from hero import *
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from walls import *
+    from poi import *
+    from ghosts import *
+    from hero import *
+    from actions import *
 
 class Map(Model):
     """El mapa donde se correrá la simulación."""
@@ -26,6 +27,7 @@ class Map(Model):
         self.poi = POI(self.ghosts)
         self.ghosts.add_poi(self.poi)
         self.heroes = MultiGrid(10, 8, torus = False)
+        self.num_steps = 0
 
         self.damage_points = 0 # El daño actual del mapa
         self.naiveSimulation = naiveSimulation
@@ -55,12 +57,14 @@ class Map(Model):
 
         # Se añaden los héroes al tablero
         self.heroes_array = []
+        counter = 1
         for position in self.initial_positions:
-            hero = Hero(self)
+            hero = Hero(self, counter)
             (hero.x, hero.y) = position
             self.heroes.place_agent(hero, position)
             self.heroes_array.append(hero)
             self.schedule.add(hero)
+            counter += 1
 
         self.current_hero = 0
 
@@ -73,8 +77,10 @@ class Map(Model):
     def turn(self):
         """Realiza únicamente el turno del próximo héroe."""
 
-        self.heroes_array[self.current_hero].step()
+        json = self.heroes_array[self.current_hero].step()
         self.current_hero = (self.current_hero + 1) % 6
+        self.num_steps += 1
+        return json
 
     def game_over(self):
         """Verifica si con el estado actual del tablero, el
