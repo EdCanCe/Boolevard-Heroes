@@ -56,9 +56,9 @@ def neigbors_with_cost(map: "Map", x, y, movement_type):
 
     neighbors = []
 
-    multiplier = 2
+    multiplier = 3
     if movement_type == 2: # En caso de que su intención sea quitar fantasmas
-        multiplier = 1
+        multiplier = 0.7
 
     adyacent = map.walls.get_neighbors(x, y)
     doors = map.walls.get_closed_neighbors(x, y)
@@ -84,6 +84,9 @@ def start_matrix(map: "Map"):
 
     Args:
         map (Map): El mapa del tablero
+
+    Returns:
+        list[list[MapNode]]: Los nodos del mapa
     """
 
     height = len(map.ghosts.dashboard)
@@ -93,20 +96,24 @@ def start_matrix(map: "Map"):
     return [[MapNode(x, y, 1000, None) for x in range(width)] for y in range(height)]
 
 def generate_deque(matrix: list[list[MapNode]], start_x, start_y, end_x, end_y):
-    pass
-    # TODO: Terminar esto :)
+    next_steps = deque()
+    current_x = end_x
+    current_y = end_y
+    while (current_x, current_y) != (start_x, start_y):
+        next_steps.appendleft((current_x, current_y))
+        temp_x = current_x
+        current_x = matrix[current_y][current_x].parent.x
+        current_y = matrix[current_y][temp_x].parent.y
+    return next_steps
 
-
-def a_star(map: "Map", start_x, start_y, end_x, end_y, movement_type):
-    """Genera una deque de las posiciones necesarias
-    para ir de un punto a otro.
+def dijkstra(map: "Map", start_x, start_y, movement_type):
+    """Genera una matriz de las posiciones necesarias
+    para ir de un punto a otros.
 
     Args:
         map (Map): El mapa del tablero
         start_x (_type_): Posición en X inicial
         start_y (_type_): Posición en Y inicial
-        end_x (_type_): Posición en X final
-        end_y (_type_): Posición en Y final
     """
 
     # Inicializa el mapa, la queue y su primera posición
@@ -120,19 +127,17 @@ def a_star(map: "Map", start_x, start_y, end_x, end_y, movement_type):
         (current_cost, (current_x, current_y)) = left_to_visit.top()
         left_to_visit.pop()
 
-        if current_x == end_x and current_y == end_y:
-            break
-
         neighbors = neigbors_with_cost(map, current_x, current_y, movement_type)
         for neighbor in neighbors:
             (x, y, cost) = neighbor
 
-def dijkstra(map: "Map", start_x, start_y, movement_type):
-    """Genera una matriz de las posiciones necesarias
-    para ir de un punto a otros.
+            if current_cost + cost < matrix[y][x].current_cost: # Se encuentra una nueva opción para llegar a esa casilla
+                matrix[y][x].current_cost = current_cost + cost
+                matrix[y][x].parent = matrix[current_y][current_x]
+                left_to_visit.push(matrix[y][x].current_cost, (x, y))
 
-    Args:
-        map (Map): El mapa del tablero
-        start_x (_type_): Posición en X inicial
-        start_y (_type_): Posición en Y inicial
-    """
+    return matrix
+
+def dijkstra_to(map: "Map", start_x, start_y, end_x, end_y, movement_type):
+    matrix = dijkstra(map, start_x, start_y, movement_type)
+    return generate_deque(matrix, start_x, start_y, end_x, end_y)

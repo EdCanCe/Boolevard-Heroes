@@ -16,4 +16,4 @@ from hero import Hero
 from map import Map
 from actions import ActionList
 from actions import Action
-from search import a_star
+from search import *
