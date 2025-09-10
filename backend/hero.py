@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from ghosts import *
     from map import *
     from actions import *
+    from search import *
 
 class Hero(Agent):
     """El héroe que hará acciones por el mapa para tratar
@@ -67,6 +68,11 @@ class Hero(Agent):
 
         self.order = 0 # orden dentro del turno en que se realiza una accion
 
+        action_type = 0 # dicta qué tipo de acción se hará
+
+        self.next_steps = deque()
+        self.movement_type = 0
+
         # Realiza acciones hasta quedarse sin puntos
         while self.action_points > 0:
             # Verifica si se hace un movimiento naive, o con strat
@@ -82,9 +88,33 @@ class Hero(Agent):
                     else: # Si no pudo hacerla, restaura los puntos de acción
                         action.restore_action_points()
 
-            else: # TODO: Simulación con estrategia
-                print("")
+            # ! Movimiento con estrategia
+            else:
+                if self.has_victim:
+                    if not self.next_steps: # Si está vacía
+                        # TODO: Llena la deque con la salida más cercana
+                        pass
 
+                else: # Si no tiene víctima
+                    if self.movement_type == 0:
+                        # TODO: Verifica si le conviene ir por poi o fantasmas
+                        # TODO: Cambio el movement type a lo correspondiente
+                        pass
+                    
+                    if self.movement_type == 1: # Va a poi
+                        if not self.next_steps: # Si está vacía
+                            # TODO: Llena la deque con el camino hacia el poi
+                            pass
+
+                    elif self.movement_type == 2: # Va a fantasmas
+                        if not self.next_steps: # Si está vacía
+                            # TODO: Llena la deque con el camino hacia el fantasma
+                            # ! En el move_with_deque, si es ir a fantasmas y el deque ya solo tiene 1 elemento (pq le falta 1 casilla y se es adyacente), hacer pop para vaciarlo ANTES de las puertas 
+                            pass
+                            
+                
+                self.move_with_deque(self.movement_type)
+                
             # Independientemente de la simulación, verifica si reveló POI
             if self.map.poi.get(self.x, self.y) == 3:
                 new_poi_value = self.map.poi.pick(self.x, self.y)
@@ -228,3 +258,96 @@ class Hero(Agent):
         }
 
         self.json["pois"].append(poi)
+
+    def get_direction(self, new_x, new_y):
+        if new_y < self.y: return 0
+        if new_x > self.x: return 1
+        if new_y > self.y: return 2
+        if new_x < self.x: return 3
+        return 4
+
+    def move_with_deque(self):
+        """Mueve un agente basándose en una deque y el ambiente actual."""
+
+        # Front = Left = 0 ; Back = nada = -1
+        (next_x, next_y) = self.next_steps[0]
+
+        direction = self.get_direction(next_x, next_y) # La dirección de movimiento
+
+        # Verifica si su destino tiene niebla y lo elimina
+        if self.map.ghosts.get_on(next_x, next_y) == 1:
+            action = ClearFog(1, self, direction)
+            if action.is_possible():
+                action.do_action()
+                return
+            
+        # Verifica si su destino tiene fantasma y lo elimina
+        if self.map.ghosts.get_on(next_x, next_y) == 2:
+            action = RemoveGhost(2, self, direction)
+            if action.is_possible():
+                action.do_action()
+                return
+
+        # Despeja fantasma de sus vecinos dependiendo de su tipo de movimiento
+        if self.movement_type == 2: # Está tratando de eliminar un fantasma
+            neighbors = self.map.ghosts.get_ghosty_neighbors(self.x, self.y)
+            for neighbor in neighbors:
+                action = RemoveGhost(2, self, direction)
+                if action.is_possible():
+                    action.do_action()
+                    return
+        
+        # Despeja niebla de sus vecinos
+        neighbors = self.map.ghosts.get_foggy_neighbors(self.x, self.y)
+        for neighbor in neighbors:
+            action = ClearFog(1, self, direction)
+            if action.is_possible():
+                action.do_action()
+                return
+            
+        # Verifica si se tiene que acabar el movimiento antes de llegar al fantasma
+        if self.movement_type == 2 and len(self.next_steps) == 1: # Es un fantasma y ya va a llegar
+            self.next_steps.popleft()
+            self.movement_type = 0
+            return
+            
+        # Verifica si para llegar a su destino tiene que abrir una puerta
+        if direction == 0 and self.map.walls.get_up(self.x, self.y) == 3:
+            action = OpenDoor(1, self, direction)
+            if action.is_possible():
+                action.do_action()
+                return
+        if direction == 1 and self.map.walls.get_right(self.x, self.y) == 3:
+            action = OpenDoor(1, self, direction)
+            if action.is_possible():
+                action.do_action()
+                return
+        if direction == 2 and self.map.walls.get_down(self.x, self.y) == 3:
+            action = OpenDoor(1, self, direction)
+            if action.is_possible():
+                action.do_action()
+                return
+        if direction == 3 and self.map.walls.get_left(self.x, self.y) == 3:
+            action = OpenDoor(1, self, direction)
+            if action.is_possible():
+                action.do_action()
+                return
+
+        # Al quitar fantasmas, nieblas y liberar su camino, avanza
+        if self.has_victim:
+            action = MoveWithVictim(2, self, direction)
+        else:
+            action = Move(1, self, direction)
+        if action.is_possible():
+            self.next_steps.popleft()
+
+            # Si ya no tiene más pasos (llegó), libera el movement
+            if not self.next_steps:
+                self.movement_type = 0
+
+            action.do_action
+            return
+        
+        # Si no pudo hacer ninguna de las anteriores, espera
+        action = DoNothing(0, self, direction)
+        action.do_action()

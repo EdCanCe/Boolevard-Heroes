@@ -160,6 +160,7 @@ class Ghosts:
         ]
 
         self.fog_list = [] # lista de casillas con niebla
+        self.added_damage = 0
 
     def add_poi(self, poi : "POI"):
 
@@ -270,6 +271,9 @@ class Ghosts:
 
                 if self.dashboard[new_y][new_x] == 2:
                     self.place_ghost(current_x, current_y) # pone fantasma
+                    if (current_x, current_y) in self.fog_list:
+                        self.fog_list.remove((current_x, current_y))
+                    self.fog_changed = True
                     q.append((new_x, new_y))
 
     # Verificación de límites del tablero
@@ -343,7 +347,7 @@ class Ghosts:
                     elif value == 1:
                         set_value = 0.5
                         can_end = True
-                    elif value in [2, 4]:
+                    elif value == 2:
                         set_value = 4
                         can_pass = True
                     elif value == 3:
@@ -352,7 +356,7 @@ class Ghosts:
                     else:
                         can_pass = True
 
-                    if value != 0:
+                    if value > 0:
                         side_value = 1
                         self.walls.set_right(current_x, current_y, set_value)
                         
@@ -366,7 +370,7 @@ class Ghosts:
                     elif value == 1:
                         set_value = 0.5
                         can_end = True
-                    elif value in [2, 4]:
+                    elif value == 2:
                         set_value = 4
                         can_pass = True
                     elif value == 3:
@@ -375,7 +379,7 @@ class Ghosts:
                     else:
                         can_pass = True
 
-                    if value != 0:
+                    if value > 0:
                         side_value = 3
                         self.walls.set_left(current_x, current_y, set_value)
 
@@ -389,7 +393,7 @@ class Ghosts:
                     elif value == 1:
                         set_value = 0.5
                         can_end = True
-                    elif value in [2, 4]:
+                    elif value == 2:
                         set_value = 4
                         can_pass = True
                     elif value == 3:
@@ -398,7 +402,7 @@ class Ghosts:
                     else:
                         can_pass = True
 
-                    if value != 0:
+                    if value > 0:
                         side_value = 0
                         self.walls.set_up(current_x, current_y, set_value)
                         
@@ -412,7 +416,7 @@ class Ghosts:
                     elif value == 1:
                         set_value = 0.5
                         can_end = True
-                    elif value in [2, 4]:
+                    elif value == 2:
                         set_value = 4
                         can_pass = True
                     elif value == 3:
@@ -421,11 +425,11 @@ class Ghosts:
                     else:
                         can_pass = True
 
-                    if value != 0:
+                    if value > 0:
                         side_value = 2
                         self.walls.set_down(current_x, current_y, set_value)
 
-                if value != 0:
+                if value > 0 and set_value != -1:
                     wall = {
                         "direction": side_value, # direccion a la que apunta
                         "status": set_value, # a que valor se actualiza
@@ -433,6 +437,9 @@ class Ghosts:
                         "x": current_x,
                         "y": current_y
                     }
+
+                    if value not in [2, 3, 4]:
+                        self.added_damage += 1
 
                     self.json["walls"].append(wall)
 
@@ -466,6 +473,7 @@ class Ghosts:
 
         self.json = json
         self.order = order
+        self.added_damage = 0
 
         (x, y) = self.generate_coords()
 
@@ -481,8 +489,13 @@ class Ghosts:
         elif self.dashboard[y][x] == 2:
             self.arise(x, y)  # Realiza oleada de fantasmas
         
-        for (fog_x, fog_y) in self.fog_list:
-            self.spread_ghost(fog_x, fog_y)
+        self.fog_changed = True
+        while self.fog_changed:
+            self.fog_changed = False
+            for (fog_x, fog_y) in self.fog_list:
+                self.spread_ghost(fog_x, fog_y)
+
+        return self.added_damage
 
     # Colocación de fantasma en una casilla
     def place_ghost(self, x, y):
@@ -500,7 +513,7 @@ class Ghosts:
                 self.poi.scared_victims += 1 # sumar 1 a victimas no salvadas
 
             self.poi.remove(x, y) # quitar POI del tablero y restar cantidad de actuales
-            self.poi.removed_pois.append((x, y))
+            self.poi.removed_pois.append(((x, y), poi_value))
 
 # --- poi.py ---
 from imports import *
@@ -553,6 +566,7 @@ class POI:
         Returns:
             int: Valor del POI seleccionado.
         """
+
         if len(self.poi_list) <= 0:
             return -1  # No hay POI disponibles
 
@@ -587,12 +601,14 @@ class POI:
 
         self.dashboard[y][x] = 3  # Coloca el POI en la casilla libre
 
+        oldValue = self.ghosts.dashboard[y][x]
+
         if self.ghosts.dashboard[y][x] in [1, 2]:
             # Si la casilla contiene ciertos valores de ghosts, los elimina
             self.ghosts.dashboard[y][x] = 0
 
         self.current += 1 # Se aumenta la cantidad de POIs en el tablero
-        self.added_pois.append((x, y))
+        self.added_pois.append(((x, y), oldValue))
 
     def remove(self, x, y):
         """Remueve del tablero un POI (no modifica los valores
@@ -602,21 +618,12 @@ class POI:
         self.current -= 1
         self.dashboard[y][x] = 0  # Remueve el POI
         
-        # TODO: añadir al JSON que se quitó un poi
-
     def willBeRescued(self, x, y):
         """Marca en el mapa un 0, ya que el POI lo
         llevaría el héroe
         """
 
         self.dashboard[y][x] = 0
-
-    def move(self, old_x, old_y, new_x, new_y):
-        """Mueve un POI a otra casilla."""
-        
-        self.dashboard[old_y][old_x], self.dashboard[new_y][new_x] = self.dashboard[new_y][new_x], self.dashboard[old_y][old_x]
-
-        # TODO: añadir al JSON que se movió el poi
 
 # --- map.py ---
 from imports import *
@@ -670,12 +677,14 @@ class Map(Model):
 
         # Se añaden los héroes al tablero
         self.heroes_array = []
+        counter = 1
         for position in self.initial_positions:
-            hero = Hero(self)
+            hero = Hero(self, counter)
             (hero.x, hero.y) = position
             self.heroes.place_agent(hero, position)
             self.heroes_array.append(hero)
             self.schedule.add(hero)
+            counter += 1
 
         self.current_hero = 0
 
@@ -716,7 +725,7 @@ class Hero(Agent):
     de salvar a las 7 víctimas.
     """
 
-    def __init__(self, model : "Map"):
+    def __init__(self, model : "Map", id):
         """Constructor del héroe.
 
         Args:
@@ -730,6 +739,7 @@ class Hero(Agent):
         self.action_points = 0
         self.stored_action_points = 0
         self.has_victim = False
+        self.id = id
 
         # Json utilizado para mandar datos
         self.json = {}
@@ -789,16 +799,27 @@ class Hero(Agent):
 
             # Independientemente de la simulación, verifica si reveló POI
             if self.map.poi.get(self.x, self.y) == 3:
-                if self.map.poi.pick(self.x, self.y) == 4: # Si es una víctima real
+                new_poi_value = self.map.poi.pick(self.x, self.y)
+
+                poi = {
+                    "x": self.x,
+                    "y": self.y,
+                    "old_status": 3,
+                    "new_status": int(new_poi_value), # poi eliminado
+                    "order": self.order
+                }
+
+                self.json["pois"].append(poi)
+
+                if new_poi_value  == 4: # Si es una víctima real
                     if not self.has_victim: # En caso de que no lleve a nadie
-                        self.has_victim = True
-                        self.map.poi.willBeRescued(self.x, self.y) # Quito en el mapa la víctima
+                        self.hold_poi_on(self.x, self.y)
+
                 else: # Si es una falsa alarma
                     self.map.poi.remove(self.x, self.y)
 
             elif self.map.poi.get(self.x, self.y) == 4 and not self.has_victim: # Que alguien más lo reveló pero no lo agarró
-                self.has_victim = True
-                self.map.poi.willBeRescued(self.x, self.y) # Quito en el mapa la víctima
+                self.hold_poi_on(self.x, self.y)
 
             self.order += 1
         
@@ -807,16 +828,17 @@ class Hero(Agent):
         self.map.poi.removed_pois = []
 
         # Después de los movimientos del héroe, finalizo el turno
-        self.map.ghosts.place_fog(self.json, self.order) # Coloca la niebla
+        self.map.damage_points += self.map.ghosts.place_fog(self.json, self.order) # Coloca la niebla
         self.check_ghost_changes() # verifica cambios y agrega en json
 
         self.order += 1 # cambio de sub-turbo entre colocar fantasmas y pois
 
         for p in self.map.poi.removed_pois:
             poi = {
-                "x": p[0],
-                "y": p[1],
-                "status": 0, # poi eliminado
+                "x": p[0][0],
+                "y": p[0][1],
+                "old_status": int(p[1]),
+                "new_status": 0, # poi eliminado
                 "order": self.order
             }
 
@@ -829,33 +851,46 @@ class Hero(Agent):
 
         for p in self.map.poi.added_pois:
             poi = {
-                "x": p[0],
-                "y": p[1],
-                "status": 3, # poi agregado
+                "x": p[0][0],
+                "y": p[0][1],
+                "old_status": 3, # poi agregado
+                "new_status": 3, # poi agregado
                 "order": self.order
             }
+
+            if p[1] > 0: # Antes había algo y se eliminó
+                ghost = {
+                    "x": p[0][0],
+                    "y": p[0][1],
+                    "status": 0, # no hay nada
+                    "order": self.order
+                }
+
+                self.json["ghosts"].append(ghost)
         
             self.json["pois"].append(poi)
 
-            # TODO: En unity verificar si al poner el poi hay fuego
+        self.order += 1
 
-        if self.map.ghosts.get_on(self.x, self.y): # Si se extendieron los fantasmas a mi casilla
-            if self.has_victim: # Si estaba con una víctima, se asusta
-                self.map.poi.scared_victims += 1
-                self.has_victim = False
+        for hero in self.map.heroes_array:
+            if hero.map.ghosts.get_on(hero.x, hero.y): # Si se extendieron los fantasmas a mi casilla
+                if hero.has_victim: # Si estaba con una víctima, se asusta
+                    hero.map.poi.scared_victims += 1
+                    hero.has_victim = False
 
-            self.to_closest_spawn_point() # Lo lleva al spawnpoint
-            self.stored_action_points = 0 # Se eliminan puntos de acción guardados
-            agent = {
-                "x": self.x,
-                "y": self.y,
-                "carrying": False,
-                "energy": self.action_points,
-                "action": "Regresa a spawnpoit",
-                "order": self.order + 1
-            }
+                hero.to_closest_spawn_point() # Lo lleva al spawnpoint
+                hero.stored_action_points = 0 # Se eliminan puntos de acción guardados
+                agent = {
+                    "x": hero.x,
+                    "y": hero.y,
+                    "id": hero.id,
+                    "carrying": False,
+                    "energy": hero.action_points,
+                    "action": "Regresa a spawnpoit",
+                    "order": self.order
+                }
 
-            self.json["agents"].append(agent)
+                self.json["agents"].append(agent)
 
         self.json["saved_victims"] = self.map.poi.rescued_victims
         self.json["scared_victims"] = self.map.poi.scared_victims
@@ -891,11 +926,20 @@ class Hero(Agent):
                     }
 
                     self.json["ghosts"].append(ghost)
-        
-        
 
+    def hold_poi_on(self, x, y):
+        self.has_victim = True
+        self.map.poi.willBeRescued(x, y) # Quito en el mapa la víctima
 
+        poi = {
+            "x": x,
+            "y": y,
+            "old_status": 4,
+            "new_status": 0, # poi eliminado, se va a poner en el héroe
+            "order": self.order
+        }
 
+        self.json["pois"].append(poi)
 
 # --- actions.py ---
 from imports import *
@@ -937,24 +981,16 @@ class ActionList:
         # Si no tiene víctima, puede pasar por el fuego o caminar normal
         else:
             if hero.map.walls.get_up(x, y) in free_path:
-                if hero.map.ghosts.get_up(x, y) == 2:
-                    possible_actions.append(MoveIntoGhost(2, hero, 0))
-                else:
+                if hero.map.ghosts.get_up(x, y) != 2:
                     possible_actions.append(Move(1, hero, 0))
             if hero.map.walls.get_right(x, y) in free_path:
-                if hero.map.ghosts.get_right(x, y) == 2:
-                    possible_actions.append(MoveIntoGhost(2, hero, 1))
-                else:
+                if hero.map.ghosts.get_right(x, y) != 2:
                     possible_actions.append(Move(1, hero, 1))
             if hero.map.walls.get_down(x, y) in free_path:
-                if hero.map.ghosts.get_down(x, y) == 2:
-                    possible_actions.append(MoveIntoGhost(2, hero, 2))
-                else:
+                if hero.map.ghosts.get_down(x, y) != 2:
                     possible_actions.append(Move(1, hero, 2))
             if hero.map.walls.get_left(x, y) in free_path:
-                if hero.map.ghosts.get_left(x, y) == 2:
-                    possible_actions.append(MoveIntoGhost(2, hero, 3))
-                else:
+                if hero.map.ghosts.get_left(x, y) != 2:
                     possible_actions.append(Move(1, hero, 3))
 
         # Se añaden las posibilidades de abrir puertas
@@ -998,7 +1034,7 @@ class ActionList:
             possible_actions.append(DestroyWall(2, hero, 3))
 
         # Se añaden las posibilidades de disipar niebla y fantasmas
-        if hero.map.ghosts.get_up(x, y) == 1 and hero.map.wal:
+        if hero.map.ghosts.get_up(x, y) == 1:
             possible_actions.append(ClearFog(1, hero, 0))
         elif hero.map.ghosts.get_up(x, y) == 2:
             possible_actions.append(ScareGhost(1, hero, 0))
@@ -1124,6 +1160,7 @@ class Move(Action):
         agent = {
             "x": self.action_x,
             "y": self.action_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe en movimiento",
@@ -1169,48 +1206,19 @@ class MoveWithVictim(Action):
         agent = {
             "x": self.action_x,
             "y": self.action_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe en movimiento con victima",
             "order": self.hero.order
         }
+
         # TODO: En unity modificar el sprite del agente segun su estado de carrying
+        # TODO: En caso de que si, mostrar un mensaje de cambio
+
         self.hero.json["agents"].append(agent)
 
         return True
-
-class MoveIntoGhost(Action):
-    """Mueve el héroe a otra casilla que tenga un
-    fantasma dentro de ella.
-    """
-
-    def is_possible(self):
-        return super().is_possible()
-
-    def do_action(self):
-        """Mueve al héroe a la casilla con el fantasma."""
-
-        super().do_action()
-
-        return False
-
-        self.hero.update_position(self.action_x, self.action_y)
-
-        # TODO: Verificar que no se quede dentro del fuego
-        agent = {
-            "x": self.action_x,
-            "y": self.action_y,
-            "carrying": self.hero.has_victim,
-            "energy": self.hero.action_points,
-            "action": "héroe entrado al fantasma",
-            "order": self.hero.order
-        }
-
-        self.hero.json["agents"].append(agent)
-
-        # ! Se modifica el método de requisito, se verifica que en la nueva posición, restándole los puntos, tenga otra posible acción. Y dentro del arreglo de generación
-
-        # ! O mas bien añadir una especie de bfs dentro de la generación del arreglo/
 
 class OpenDoor(Action):
     """Abre una puerta alrededor del héroe."""
@@ -1235,6 +1243,7 @@ class OpenDoor(Action):
         agent = {
             "x": self.current_x,
             "y": self.current_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe abre una puerta",
@@ -1277,6 +1286,7 @@ class CloseDoor(Action):
         agent = {
             "x": self.current_x,
             "y": self.current_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe cierra una puerta",
@@ -1321,6 +1331,7 @@ class DamageWall(Action):
         agent = {
             "x": self.current_x,
             "y": self.current_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe dañó una pared",
@@ -1365,6 +1376,7 @@ class DestroyWall(Action):
         agent = {
             "x": self.current_x,
             "y": self.current_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe ha tumbado una pared",
@@ -1388,6 +1400,11 @@ class ClearFog(Action):
     """Dispersa una niebla alrededor del héroe."""
 
     def is_possible(self):
+        (self.current_x, self.current_y) = self.hero.pos
+        (self.action_x, self.action_y) = self.hero.pos
+
+        self.update_coords()
+
         if not (self.action_x, self.action_y) in self.hero.map.walls.get_neighbors(self.current_x, self.current_y) and (self.action_x, self.action_y) != (self.current_x, self.current_y):
             return False
 
@@ -1400,9 +1417,12 @@ class ClearFog(Action):
 
         self.hero.map.ghosts.set_on(self.action_x, self.action_y, 0)
 
+        self.hero.map.ghosts.fog_list.remove((self.action_x, self.action_y))
+
         agent = {
             "x": self.current_x,
             "y": self.current_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe dispersa una niebla",
@@ -1425,6 +1445,11 @@ class ScareGhost(Action):
     """Ahuyenta un fantasma alrededor del héroe."""
 
     def is_possible(self):
+        (self.current_x, self.current_y) = self.hero.pos
+        (self.action_x, self.action_y) = self.hero.pos
+
+        self.update_coords()
+
         if not (self.action_x, self.action_y) in self.hero.map.walls.get_neighbors(self.current_x, self.current_y) and (self.action_x, self.action_y) != (self.current_x, self.current_y):
             return False
 
@@ -1436,10 +1461,12 @@ class ScareGhost(Action):
         super().do_action()
 
         self.hero.map.ghosts.set_on(self.action_x, self.action_y, 1)
+        self.hero.map.ghosts.fog_list.append((self.action_x, self.action_y))
 
         agent = {
             "x": self.current_x,
             "y": self.current_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe ahuyenta un fantasma a niebla",
@@ -1462,6 +1489,11 @@ class RemoveGhost(Action):
     """Remueve un fantasma alrededor del héroe."""
 
     def is_possible(self):
+        (self.current_x, self.current_y) = self.hero.pos
+        (self.action_x, self.action_y) = self.hero.pos
+
+        self.update_coords()
+
         if not (self.action_x, self.action_y) in self.hero.map.walls.get_neighbors(self.current_x, self.current_y) and (self.action_x, self.action_y) != (self.current_x, self.current_y):
             return False
 
@@ -1477,6 +1509,7 @@ class RemoveGhost(Action):
         agent = {
             "x": self.current_x,
             "y": self.current_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe ahuyenta un fantasma por completo",
@@ -1514,6 +1547,7 @@ class DoNothing(Action):
         agent = {
             "x": self.current_x,
             "y": self.current_y,
+            "id": self.hero.id,
             "carrying": self.hero.has_victim,
             "energy": self.hero.action_points,
             "action": "héroe espera en su casilla",
@@ -1529,6 +1563,8 @@ from imports import *
 
 app = Flask(__name__)
 
+turns = []
+
 @app.route("/start/<mode>")
 def start(mode):
     global simulation
@@ -1542,7 +1578,15 @@ def start(mode):
 def turn():
     if not isinstance(simulation, Map):
         return "Simulation not started", 400
-    return jsonify(simulation.turn())
+    current = jsonify(simulation.turn())
+    turns.append(current)
+    return current
+
+@app.route("/turn/<id>")
+def selected_turn(id):
+    if not isinstance(simulation, Map):
+        return "Simulation not started", 400
+    return turns[int(id)]
 
 if __name__ == "__main__":
     app.run(debug=True)

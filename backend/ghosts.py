@@ -124,10 +124,26 @@ class Ghosts:
             list[tuple[int, int]]: Lista de coordenadas vecinas con fantasmas.
         """
         neighbors = self.walls.get_neighbors(x, y)  # Vecinos accesibles según Walls
-        foggy_neighbors = []
+        ghosty_neighbors = []
 
         for current_x, current_y in neighbors:
             if self.dashboard[current_y][current_x] == 2:  # hay fantasma
+                ghosty_neighbors.append((current_x, current_y))
+
+        return ghosty_neighbors
+    
+    # Vecinos con niebla
+    def get_foggy_neighbors(self, x, y):
+        """Obtiene las casillas vecinas que contienen niebla y son adyacentes.
+
+        Returns:
+            list[tuple[int, int]]: Lista de coordenadas vecinas con niebla.
+        """
+        neighbors = self.walls.get_neighbors(x, y)  # Vecinos accesibles según Walls
+        foggy_neighbors = []
+
+        for current_x, current_y in neighbors:
+            if self.dashboard[current_y][current_x] == 1:  # hay niebla
                 foggy_neighbors.append((current_x, current_y))
 
         return foggy_neighbors
