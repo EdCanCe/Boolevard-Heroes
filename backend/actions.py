@@ -482,8 +482,6 @@ class ClearFog(Action):
 
         self.hero.map.ghosts.set_on(self.action_x, self.action_y, 0)
 
-        self.hero.map.ghosts.fog_list.remove((self.action_x, self.action_y))
-
         agent = {
             "x": self.current_x,
             "y": self.current_y,
@@ -526,7 +524,6 @@ class ScareGhost(Action):
         super().do_action()
 
         self.hero.map.ghosts.set_on(self.action_x, self.action_y, 1)
-        self.hero.map.ghosts.fog_list.append((self.action_x, self.action_y))
 
         agent = {
             "x": self.current_x,

@@ -43,8 +43,12 @@ class Ghosts:
         self.fog_list = [] # lista de casillas con niebla
         self.added_damage = 0
 
-    def add_poi(self, poi : "POI"):
+    # TODO: En los setters añadir si es fog:
+    self.hero.map.ghosts.fog_list.remove((self.action_x, self.action_y)) # TODO: Y si es fuego, removerlo de la lista de fuegogos
+    # ! Depende del valor anterior y posterior, ponerle append o remove
 
+    def add_poi(self, poi : "POI"):
+        # TODO: Comentar
         self.poi = poi
 
     # Métodos de generación de coordenadas aleatorias
@@ -87,34 +91,10 @@ class Ghosts:
             return -1
         return self.dashboard[y][x + 1]
 
-    # Setters de celdas adyacentes
+    # Setter de celda
     def set_on(self, x, y, value):
         """Asigna un valor a la casilla (x, y)."""
         self.dashboard[y][x] = value
-
-    def set_up(self, x, y, value):
-        """Asigna un valor a la casilla arriba de (x, y)."""
-        if y <= 1 or y >= 7:
-            return
-        self.dashboard[y - 1][x] = value
-
-    def set_down(self, x, y, value):
-        """Asigna un valor a la casilla abajo de (x, y)."""
-        if y <= 0 or y >= 6:
-            return
-        self.dashboard[y + 1][x] = value
-
-    def set_left(self, x, y, value):
-        """Asigna un valor a la casilla a la izquierda de (x, y)."""
-        if x <= 1 or x >= 9:
-            return
-        self.dashboard[y][x - 1] = value
-
-    def set_right(self, x, y, value):
-        """Asigna un valor a la casilla a la derecha de (x, y)."""
-        if x <= 0 or x >= 8:
-            return
-        self.dashboard[y][x + 1] = value
 
     # Vecinos con fantasmas
     def get_ghosty_neighbors(self, x, y):
@@ -375,8 +355,7 @@ class Ghosts:
         (x, y) = self.generate_coords()
 
         if self.dashboard[y][x] == 0:
-            self.dashboard[y][x] = 1  # Coloca niebla
-            self.fog_list.append((x, y))
+            self.set_on(x, y, 0)  # Coloca niebla
 
         elif self.dashboard[y][x] == 1: # Hay niebla
             self.place_ghost(x, y) # colocar fantasma
@@ -398,7 +377,7 @@ class Ghosts:
     def place_ghost(self, x, y):
         """Coloca un fantasma en una casilla."""
 
-        self.dashboard[y][x] = 2
+        self.set_on(x, y, 2)
 
         if self.poi.dashboard[y][x] >= 3: # hay un POI
             poi_value = self.poi.dashboard[y][x]

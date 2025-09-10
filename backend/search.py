@@ -161,7 +161,7 @@ def closest_poi(map: "Map", hero_id):
 
     Args:
         map (Map): El mapa del tablero
-        hero_id (ind): El ID del héroe a verificar
+        hero_id (int): El ID del héroe a verificar
     """
 
     closest_to_pois = PriorityQueue()
@@ -203,3 +203,17 @@ def closest_poi(map: "Map", hero_id):
         next_steps.append(map.poi.current_poi_coords[poi_id])
         
     return next_steps
+
+def closest_ghost(map: "Map", x, y):
+    """Obtiene el camino para llegar al POI más cercano en caso
+    de tener uno, en caso contrario, regresa una deque vacía.
+
+    Args:
+        map (Map): El mapa del tablero
+        x (int): La coordenada X del héroe
+        y (int): La coordenada Y del héroe
+    """
+     
+    matrix = dijkstra(map, x, y, 2)
+
+    

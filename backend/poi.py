@@ -22,7 +22,7 @@ class POI:
             5 -> Falsa alarma
     """
 
-    def __init__(self, ghosts):
+    def __init__(self, ghosts : "Ghosts"):
         """Inicializa las variables de la clase y el tablero de POI."""
 
         self.ghosts = ghosts  # Referencia al objeto ghosts para generar coordenadas
@@ -97,7 +97,7 @@ class POI:
 
         if self.ghosts.dashboard[y][x] in [1, 2]:
             # Si la casilla contiene ciertos valores de ghosts, los elimina
-            self.ghosts.dashboard[y][x] = 0
+            self.ghosts.set_on(x, y, 0)
 
         self.current += 1 # Se aumenta la cantidad de POIs en el tablero
         self.added_pois.append(((x, y), oldValue))
