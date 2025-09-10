@@ -41,7 +41,7 @@ public class JsonController : MonoBehaviour
         // Empieza el bucle en donde se espera 4 segundos para cada turno
         while (true)
         {
-            yield return GetYeison(stepUrl);
+            yield return StartCoroutine(GetYeison(stepUrl));
             yield return new WaitForSeconds(4f);
         }
     }
@@ -64,6 +64,11 @@ public class JsonController : MonoBehaviour
             else
             {
                 string json = web.downloadHandler.text;
+                if (string.IsNullOrWhiteSpace(json) || json == "null")
+                {
+                    Debug.LogWarning("Ya no hay más YEISON.");
+                    yield break;
+                }
                 PrintYeison(json);
             }
         }
