@@ -12,7 +12,9 @@
 [Uu]ser[Ss]ettings/
 *.log
 .DS_Store
-**.DS_Store
+**/.DS_Store
+*/.DS_Store
+*.DS_Store
 
 .venv/
 env/
