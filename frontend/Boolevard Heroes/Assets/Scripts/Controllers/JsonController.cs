@@ -6,14 +6,14 @@ using UnityEngine.Networking;
 /// It will follow the pleyaer with a speciffic offset.
 /// </summary>
 public class JsonController : MonoBehaviour
-{   
+{
     // Variable goblal que hace referencia a una url para inicializar el juego
-    public string startUrl = "http://127.0.0.1:5000/start/naive";
+    private string startUrl = "http://127.0.0.1:5000/start/naive";
     // Variable global que hace raferencia a una url en la simulacion del juego
-    public string stepUrl = "http://127.0.0.1:5000/turn";
+    private string stepUrl = "http://127.0.0.1:5000/turn";
     /// <summary>
-    /// Start es llamado una sola vez al iniciar el script, y se valida que las urls 
-    /// sean validas y no esten vacias, ademas llama al servidor con la url de inicio 
+    /// Start es llamado una sola vez al iniciar el script, y se valida que las urls
+    /// sean validas y no esten vacias, ademas llama al servidor con la url de inicio
     /// y para despues empezar a llamar cada turno de la simulacion.
     /// </summary>
     void Start()
@@ -82,7 +82,7 @@ public class JsonController : MonoBehaviour
             Debug.Log("Hola, no se paso bien el yeison o no coinciden los nombres");
             return;
         }
-        // Imprime los datos de los agentes 
+        // Imprime los datos de los agentes
         if(data.agents != null)
         {
             foreach(Agent a in data.agents)
