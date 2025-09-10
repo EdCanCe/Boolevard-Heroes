@@ -1,5 +1,6 @@
 from imports import *
 
+# ChatGPT me mostró que al usar typing, no se añade al runtime y solo ayuda en el editor
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from walls import *

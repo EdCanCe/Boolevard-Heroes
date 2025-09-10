@@ -130,3 +130,25 @@ class Walls:
             neighbors.append((x, y + 1))
 
         return neighbors
+    
+    def get_closed_neighbors(self, x, y):
+        """Obtiene las casillas adyacentes desde (x, y) donde
+        haya una puerta de por medio.
+        """
+
+        neighbors = []
+        
+        # Verifica si las casillas de tienen puerta
+        if self.get_left(x, y) == 3:
+            neighbors.append((x - 1, y))
+
+        if self.get_right(x, y) == 3:
+            neighbors.append((x + 1, y))
+
+        if self.get_up(x, y) == 3:
+            neighbors.append((x, y - 1))
+
+        if self.get_down(x, y) == 3:
+            neighbors.append((x, y + 1))
+
+        return neighbors

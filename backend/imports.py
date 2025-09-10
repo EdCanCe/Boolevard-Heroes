@@ -7,6 +7,7 @@ from mesa import Agent
 from abc import ABC, abstractmethod
 from flask import Flask, jsonify
 import copy
+import heapq
 
 from walls import Walls
 from ghosts import Ghosts
