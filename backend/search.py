@@ -9,6 +9,9 @@ if TYPE_CHECKING:
     from actions import *
 
 class MapNode:
+    """Un nodo dentro del mapa que te dicta qué nodo se ocupa
+    para llegar a éste.
+    """
     def __init__(self, x, y, current_cost, parent: "MapNode"):
         self.x = x
         self.y = y
@@ -16,39 +19,33 @@ class MapNode:
         self.parent = parent
 
 class PriorityQueue:
+    """Priority queue para ordenar las próximas casillas a visitar.
+    """
     def __init__(self):
         self.__data = []
 
-    # Función para verificar si la fila de prioridades está vacía
+    # Verifica si está vacía
     def empty(self):
         return not self.__data
-
-    # Función para limpiar la fila de prioridades
-    def clear(self):
-        self.__data.clear()
     
-    # Función para insertar un elemento en la fila de prioridades
+    # Inserta un nuevo elemento
     def push(self, priority, value):
         heapq.heappush(self.__data, (priority, value))
 
-    # Función para extraer el elemento con mayor prioridad (menor número)
+    # Elimina el elemento más próximo
     def pop(self):
-        if self.__data: # not empty
+        if self.__data: # No está vacío
             heapq.heappop(self.__data)
         else:
             raise Exception("No such element")
         
-    # Función para obtener el primer elemento sin sacarlo
+    # Obtiene el próximo elemento
     def top(self):
-        if self.__data: # not empty
+        if self.__data: # No está vacío
             return self.__data[0]
         else:
             raise Exception("No such element")
         
-def heuristic(start_x, start_y, end_x, end_y):
-    manhattan = abs(start_x - end_x) + abs(start_y - end_y)
-    return manhattan
-
 def neigbors_with_cost(map: "Map", x, y, movement_type):
     """Obtiene los vecinos de una casilla, con el costo
     para poder llegar a éstas.
@@ -60,6 +57,7 @@ def neigbors_with_cost(map: "Map", x, y, movement_type):
     if movement_type == 2: # En caso de que su intención sea quitar fantasmas
         multiplier = 0.7
 
+    # Las celdas adyacentes
     adyacent = map.walls.get_neighbors(x, y)
     doors = map.walls.get_closed_neighbors(x, y)
 
@@ -95,15 +93,26 @@ def start_matrix(map: "Map"):
     # Línea de código creada con ChatGPT, no estoy acostumbrado a trabajar con matrices en Python
     return [[MapNode(x, y, 1000, None) for x in range(width)] for y in range(height)]
 
-def generate_deque(matrix: list[list[MapNode]], start_x, start_y, end_x, end_y):
+def generate_deque(matrix: list[list[MapNode]], start_x, start_y, end_x, end_y, starts_from_hero):
+    """Genera la deque que dicta que casillas pasar para llegar de un nodo a otro
+    """
+
     next_steps = deque()
     current_x = end_x
     current_y = end_y
+
+    # Sigue los pasos marcados por los padres de los nodos
     while (current_x, current_y) != (start_x, start_y):
-        next_steps.appendleft((current_x, current_y))
+        # Dependiendo del tipo en que se tiene que añadir, hace un append u otro
+        if starts_from_hero:
+            next_steps.appendleft((current_x, current_y))
+        else:
+            next_steps.append((current_x, current_y))
+
         temp_x = current_x
         current_x = matrix[current_y][current_x].parent.x
         current_y = matrix[current_y][temp_x].parent.y
+
     return next_steps
 
 def dijkstra(map: "Map", start_x, start_y, movement_type):
@@ -139,5 +148,58 @@ def dijkstra(map: "Map", start_x, start_y, movement_type):
     return matrix
 
 def dijkstra_to(map: "Map", start_x, start_y, end_x, end_y, movement_type):
+    """Utilizando el algoritmo de dijkstra, regresa una deque
+    de las casillas necesarias para llegar de una casilla a otra.
+    """
+
     matrix = dijkstra(map, start_x, start_y, movement_type)
-    return generate_deque(matrix, start_x, start_y, end_x, end_y)
+    return generate_deque(matrix, start_x, start_y, end_x, end_y, True)
+
+def closest_poi(map: "Map", hero_id):
+    """Obtiene el camino para llegar al POI más cercano en caso
+    de tener uno, en caso contrario, regresa una deque vacía.
+
+    Args:
+        map (Map): El mapa del tablero
+        hero_id (ind): El ID del héroe a verificar
+    """
+
+    closest_to_pois = PriorityQueue()
+
+    # Para cada POI
+    i = 0
+    for poi in map.poi.current_poi_coords:
+        poi_matrix = dijkstra(map, poi[0], poi[1], 1)
+        heroes_distance = PriorityQueue()
+
+        # Obtiene la distancia de cada heroe del poi actual
+        for hero in map.heroes_array:
+            heroes_distance.push(poi_matrix[hero.y][hero.x].current_cost, hero.id)
+
+        closest_distance = heroes_distance.top()[0] # Obtiene la distancia que el héroe más cercano tiene al poi
+
+        closest_heroes = []
+
+        while not heroes_distance.empty() and heroes_distance.top()[0] == closest_distance:
+            closest_heroes.append(heroes_distance.top()[1])
+            heroes_distance.pop()
+
+        # Añade los índices de los héroes más cercanos hacia un poi
+        if hero_id in closest_heroes:
+            closest_to_pois.push(len(closest_heroes), (i, poi_matrix))
+
+        i += 1
+
+    next_steps = deque()
+
+    # Si no está vacía, significa que es el más cercano a alguno
+    if not closest_to_pois.empty():
+        (heroes_len, (poi_id, poi_matrix)) = closest_to_pois.top()
+        hero_id -= 1
+
+        next_steps = generate_deque(poi_matrix, map.poi.current_poi_coords[poi_id][0], map.poi.current_poi_coords[poi_id][1], map.heroes_array[hero_id].x, map.heroes_array[hero_id].y, False)
+
+        next_steps.popleft()
+        next_steps.append(map.poi.current_poi_coords[poi_id])
+        
+    return next_steps

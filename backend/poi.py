@@ -50,6 +50,8 @@ class POI:
         self.removed_pois = []
         self.added_pois = []
 
+        self.current_poi_coords = [(4, 2), (1, 5), (8, 5)]
+
     def pick(self, x, y):
         """Selecciona un POI aleatoriamente y lo elimina del vector.
 
@@ -99,6 +101,7 @@ class POI:
 
         self.current += 1 # Se aumenta la cantidad de POIs en el tablero
         self.added_pois.append(((x, y), oldValue))
+        self.current_poi_coords.append((x, y))
 
     def remove(self, x, y):
         """Remueve del tablero un POI (no modifica los valores
@@ -107,6 +110,7 @@ class POI:
         
         self.current -= 1
         self.dashboard[y][x] = 0  # Remueve el POI
+        self.current_poi_coords.remove((x, y))
         
     def willBeRescued(self, x, y):
         """Marca en el mapa un 0, ya que el POI lo
@@ -114,3 +118,4 @@ class POI:
         """
 
         self.dashboard[y][x] = 0
+        self.current_poi_coords.remove((x, y))
