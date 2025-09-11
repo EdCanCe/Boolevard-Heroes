@@ -44,8 +44,10 @@ class Ghosts:
         self.ghost_list = [(2, 2), (2, 3), (3, 2), (3, 3), (4, 3), (4, 4), (5, 3), (6, 5), (6, 6), (7, 5)]
         self.added_damage = 0
 
+        self.rng = np.random.default_rng()  # inicializas un RNG propio
+
     def add_poi(self, poi : "POI"):
-        # TODO: Comentar
+        """Le añade el POI al fantasma para poder enlazarse."""
         self.poi = poi
 
     # Métodos de generación de coordenadas aleatorias

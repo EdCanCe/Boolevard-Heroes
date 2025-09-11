@@ -55,7 +55,7 @@ def neigbors_with_cost(map: "Map", x, y, movement_type):
 
     multiplier = 1
     if movement_type == 2: # En caso de que su intención sea quitar fantasmas
-        multiplier = 0.3
+        multiplier = 0.5
 
     # Las celdas adyacentes
     adyacent = map.walls.get_neighbors(x, y)
@@ -190,7 +190,7 @@ def closest_poi(map: "Map", hero_id):
 
         # Añade los índices de los héroes más cercanos hacia un poi
         if hero_id in closest_heroes:
-            closest_to_pois.push(len(closest_heroes), (i, poi_matrix))
+            closest_to_pois.push(poi_matrix[poi[1]][poi[0]].current_cost, (i, poi_matrix))
 
         i += 1
 

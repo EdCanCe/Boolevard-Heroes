@@ -99,7 +99,7 @@ class Hero(Agent):
                     if self.movement_type == 0:
                         self.next_steps = closest_poi(self.map, self.id)
                         self.movement_type = 1
-                        if not self.next_steps: # En caso de que está vacía lo lleva al fuego mejor
+                        if not self.next_steps or len(self.map.ghosts.ghost_list) / 80 > 0.30: # En caso de que está vacía lo lleva al fuego mejor o haya mucho fuego
                             self.next_steps = closest_ghost(self.map, self.x, self.y)
                             self.movement_type = 2
                     
@@ -110,6 +110,15 @@ class Hero(Agent):
                     elif self.movement_type == 2: # Va a fantasmas
                         if not self.next_steps: # Si está vacía
                             self.next_steps = closest_ghost(self.map, self.x, self.y)
+                            """
+                    
+                    if self.id <= 4:
+                        self.next_steps = closest_poi(self.map, self.id)
+                        self.movement_type = 1
+                    if not self.next_steps or self.id > 4: # En caso de que está vacía lo lleva al fuego mejor o haya mucho fuego
+                        self.next_steps = closest_ghost(self.map, self.x, self.y)
+                        self.movement_type = 2   
+                        """
 
                 if not self.next_steps:
                     action = DoNothing(0, self, 4)
@@ -119,6 +128,7 @@ class Hero(Agent):
                     self.move_with_deque()
                 
             # Independientemente de la simulación, verifica si reveló POI
+            # TODO: Verificar en TODOS los agentes, pq el poi podría caer dios quiera en la casilla de la persona
             if self.map.poi.get(self.x, self.y) == 3:
                 new_poi_value = self.map.poi.pick(self.x, self.y)
 
@@ -132,7 +142,7 @@ class Hero(Agent):
 
                 self.json["pois"].append(poi)
 
-                if new_poi_value  == 4: # Si es una víctima real
+                if new_poi_value == 4: # Si es una víctima real
                     if not self.has_victim: # En caso de que no lleve a nadie
                         self.hold_poi_on(self.x, self.y)
 
@@ -196,6 +206,10 @@ class Hero(Agent):
         for hero in self.map.heroes_array:
             # TODO: No mata al heroe si es expandido por el fuego
             # TODO: En el json agregar el poi en el MISMO turno
+            # TODO: Añadir romper paredes solo si el daño es menor
+            # TODO: Añadir que un agente esté vinculado en específico a un POI, cuando se salva, se ponen a otros
+            # TODO: Añadir una lista de eventos, y que solo sea posible vincularse a una, si alguien más no está vinculada
+            # TODO: Al momento de decidir a cuál POI irías, verificar la distancia que otros héroes tienen, si eres el 2do podrías ir? pero ya si eres el 3ro, ne
             if hero.map.ghosts.get_on(hero.x, hero.y): # Si se extendieron los fantasmas a mi casilla
                 if hero.has_victim: # Si estaba con una víctima, se asusta
                     hero.map.poi.scared_victims += 1
@@ -298,20 +312,20 @@ class Hero(Agent):
         # Despeja fantasma de sus vecinos dependiendo de su tipo de movimiento
         if self.movement_type == 2: # Está tratando de eliminar un fantasma
             neighbors = self.map.ghosts.get_ghosty_neighbors(self.x, self.y)
-            #TODO: Verificar si si son fantasmas, elimino algo que no era
+            #TODO: Verificar si si son fantasmas, elimino algo que no era y pierden puntos??
             for neighbor in neighbors:
                 action = RemoveGhost(2, self, direction)
                 if action.is_possible():
                     action.do_action()
                     return
         
-        # Despeja niebla de sus vecinos
-        neighbors = self.map.ghosts.get_foggy_neighbors(self.x, self.y)
-        for neighbor in neighbors:
-            action = ClearFog(1, self, direction)
-            if action.is_possible():
-                action.do_action()
-                return
+            # Despeja niebla de sus vecinos
+            neighbors = self.map.ghosts.get_foggy_neighbors(self.x, self.y)
+            for neighbor in neighbors:
+                action = ClearFog(1, self, direction)
+                if action.is_possible():
+                    action.do_action()
+                    return
             
         # Verifica si para llegar a su destino tiene que abrir una puerta
         if direction == 0 and self.map.walls.get_up(self.x, self.y) == 3:
