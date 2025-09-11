@@ -55,7 +55,7 @@ def neigbors_with_cost(map: "Map", x, y, movement_type):
 
     multiplier = 1
     if movement_type == 2: # En caso de que su intención sea quitar fantasmas
-        multiplier = 0.3
+        multiplier = 0.2
 
     # Las celdas adyacentes
     adyacent = map.walls.get_neighbors(x, y)

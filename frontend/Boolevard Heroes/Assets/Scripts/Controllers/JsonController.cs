@@ -158,23 +158,22 @@ public class JsonController : MonoBehaviour
 
             foreach (Agent a in s.agents)
             {
-                EntityManager.Instance.UpdateAgent(a);
-
+                StartCoroutine(EntityManager.Instance.UpdateAgent(a));
             }
 
             foreach (Ghost g in s.ghosts)
             {
-                EntityManager.Instance.UpdateGhost(g);
+                StartCoroutine(EntityManager.Instance.UpdateGhost(g));
             }
 
             foreach (Wall w in s.walls)
             {
-                EntityManager.Instance.UpdateWalls(w);
+                StartCoroutine(EntityManager.Instance.UpdateWalls(w));
             }
 
             foreach (Poi p in s.pois)
             {
-                EntityManager.Instance.UpdatePoi(p);
+                StartCoroutine(EntityManager.Instance.UpdatePoi(p));
             }
 
             yield return new WaitForSeconds(1f);

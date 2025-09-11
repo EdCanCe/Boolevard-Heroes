@@ -99,7 +99,7 @@ class Hero(Agent):
                     if self.movement_type == 0:
                         self.next_steps = closest_poi(self.map, self.id)
                         self.movement_type = 1
-                        if not self.next_steps: # En caso de que está vacía lo lleva al fuego mejor o haya mucho fuego
+                        if not self.next_steps or len(self.map.ghosts.ghost_list) / 80 > 0.3: # En caso de que está vacía lo lleva al fuego mejor o haya mucho fuego
                             self.next_steps = closest_ghost(self.map, self.x, self.y)
                             self.movement_type = 2
                     
@@ -139,6 +139,8 @@ class Hero(Agent):
                     "new_status": int(new_poi_value), # poi eliminado
                     "order": self.order
                 }
+
+                self.order += 1
 
                 self.json["pois"].append(poi)
 
@@ -210,7 +212,7 @@ class Hero(Agent):
             # TODO: Añadir que un agente esté vinculado en específico a un POI, cuando se salva, se ponen a otros
             # TODO: Añadir una lista de eventos, y que solo sea posible vincularse a una, si alguien más no está vinculada
             # TODO: Al momento de decidir a cuál POI irías, verificar la distancia que otros héroes tienen, si eres el 2do podrías ir? pero ya si eres el 3ro, ne
-            if hero.map.ghosts.get_on(hero.x, hero.y): # Si se extendieron los fantasmas a mi casilla
+            if hero.map.ghosts.get_on(hero.x, hero.y) == 2: # Si se extendieron los fantasmas a mi casilla
                 if hero.has_victim: # Si estaba con una víctima, se asusta
                     hero.map.poi.scared_victims += 1
                     hero.has_victim = False
@@ -278,6 +280,18 @@ class Hero(Agent):
 
         self.json["pois"].append(poi)
 
+        agent = {
+            "x": self.x,
+            "y": self.y,
+            "id": self.id,
+            "carrying": True,
+            "energy": self.action_points,
+            "action": "Agarra POI",
+            "order": self.order
+        }
+
+        self.json["agents"].append(agent)
+
     def get_direction(self, new_x, new_y):
         if new_y < self.y: return 0
         if new_x > self.x: return 1
@@ -312,9 +326,8 @@ class Hero(Agent):
         # Despeja fantasma de sus vecinos dependiendo de su tipo de movimiento
         if self.movement_type == 2: # Está tratando de eliminar un fantasma
             neighbors = self.map.ghosts.get_ghosty_neighbors(self.x, self.y)
-            #TODO: Verificar si si son fantasmas, elimino algo que no era y pierden puntos??
             for neighbor in neighbors:
-                action = RemoveGhost(2, self, direction)
+                action = RemoveGhost(2, self, self.get_direction(neighbor[0], neighbor[1]))
                 if action.is_possible():
                     action.do_action()
                     return
@@ -322,7 +335,7 @@ class Hero(Agent):
             # Despeja niebla de sus vecinos
             neighbors = self.map.ghosts.get_foggy_neighbors(self.x, self.y)
             for neighbor in neighbors:
-                action = ClearFog(1, self, direction)
+                action = ClearFog(1, self, self.get_direction(neighbor[0], neighbor[1]))
                 if action.is_possible():
                     action.do_action()
                     return
@@ -355,7 +368,7 @@ class Hero(Agent):
         else:
             action = Move(1, self, direction)
 
-        if action.is_possible():
+        if action.is_possible() and (next_x, next_y) not in self.map.ghosts.get_ghosty_neighbors(self.x, self.y):
             self.next_steps.popleft()
 
             # Si ya no tiene más pasos (llegó), libera el movement

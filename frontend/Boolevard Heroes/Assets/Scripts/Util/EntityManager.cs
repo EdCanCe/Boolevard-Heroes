@@ -39,7 +39,6 @@ public class EntityManager : MonoBehaviour
 
     public void Hide_Everything()
     {
-        Debug.Log("Me Metí al hide");
         for (int x = 0; x < 10; x++)
         {
             for (int y = 0; y < 8; y++)
@@ -65,12 +64,31 @@ public class EntityManager : MonoBehaviour
         StartCoroutine(positionManager.show(positionManager.get_ghost(6, 5), 0, 0));
         StartCoroutine(positionManager.show(positionManager.get_ghost(6, 6), 0, 0));
         StartCoroutine(positionManager.show(positionManager.get_ghost(7, 5), 0, 0));
-        StartCoroutine(positionManager.show(positionManager.get_poi_unrevealed(4, 2), 1, 0));
-        StartCoroutine(positionManager.show(positionManager.get_poi_unrevealed(8, 5), 1, 0));
-        StartCoroutine(positionManager.show(positionManager.get_poi_unrevealed(1, 5), 1, 0));
+        StartCoroutine(positionManager.show(positionManager.get_poi_unrevealed(4, 2), 0, 0));
+        StartCoroutine(positionManager.show(positionManager.get_poi_unrevealed(8, 5), 0, 0));
+        StartCoroutine(positionManager.show(positionManager.get_poi_unrevealed(1, 5), 0, 0));
+
+        Vector3 pos = PosMgr.GetComponent<PositionManager>().get_coords(6, 0);
+        GameObject newAgent = Instantiate(agentPrefab, pos, Quaternion.identity);
+        agents[1] = newAgent;
+        pos = PosMgr.GetComponent<PositionManager>().get_coords(9, 4);
+        newAgent = Instantiate(agentPrefab, pos, Quaternion.identity);
+        agents[2] = newAgent;
+        pos = PosMgr.GetComponent<PositionManager>().get_coords(3, 7);
+        newAgent = Instantiate(agentPrefab, pos, Quaternion.identity);
+        agents[3] = newAgent;
+        pos = PosMgr.GetComponent<PositionManager>().get_coords(0, 3);
+        newAgent = Instantiate(agentPrefab, pos, Quaternion.identity);
+        agents[4] = newAgent;
+        pos = PosMgr.GetComponent<PositionManager>().get_coords(4, 7);
+        newAgent = Instantiate(agentPrefab, pos, Quaternion.identity);
+        agents[5] = newAgent;
+        pos = PosMgr.GetComponent<PositionManager>().get_coords(5, 0);
+        newAgent = Instantiate(agentPrefab, pos, Quaternion.identity);
+        agents[6] = newAgent;
     }
 
-    public void UpdateAgent(Agent a)
+    public IEnumerator UpdateAgent(Agent a)
     {
         if (!agents.ContainsKey(a.id))
         {
@@ -81,15 +99,20 @@ public class EntityManager : MonoBehaviour
         else
         {
             GameObject agent = agents[a.id];
-            Vector3 pos = PosMgr.GetComponent<PositionManager>().get_coords(a.x, a.y);
-            agent.transform.position = pos;
+            Vector3 initialPos = agent.transform.position;
+            Vector3 endPos = PosMgr.GetComponent<PositionManager>().get_coords(a.x, a.y);
+            endPos.y = initialPos.y;
+            StartCoroutine(PosMgr.GetComponent<PositionManager>().animateFrom(agent, initialPos, endPos, animationTime));
         }
+
+        yield return null;
     }
 
-    public void UpdateGhost(Ghost g)
+    public IEnumerator UpdateGhost(Ghost g)
     {
         GameObject ghost = positionManager.get_ghost(g.x, g.y);
         GameObject fog = positionManager.get_fog(g.x, g.y);
+        bool ghostFlag = false;
 
         if (g.status == 2)
         {
@@ -97,7 +120,21 @@ public class EntityManager : MonoBehaviour
             {
                 StartCoroutine(positionManager.hide(fog, 1, animationTime));
             }
+
+            if (ghost.activeSelf)
+            {
+                StartCoroutine(positionManager.show(fog, 1, animationTime / 2f));
+                ghostFlag = true;
+            }
+
             StartCoroutine(positionManager.show(ghost, 0, animationTime));
+
+            if (ghostFlag)
+            {
+                yield return new WaitForSeconds(animationTime / 2f);
+                StartCoroutine(positionManager.hide(fog, 1, animationTime / 2f));
+            }
+
         }
 
         else if (g.status == 1)
@@ -114,51 +151,44 @@ public class EntityManager : MonoBehaviour
             StartCoroutine(positionManager.hide(ghost, 1, animationTime));
             StartCoroutine(positionManager.hide(fog, 1, animationTime));
         }
+
+        yield return null;
     }
 
-    public void UpdateWalls(Wall w)
+    public IEnumerator UpdateWalls(Wall w)
     {
-        if (!walls.ContainsKey(w.order))
-        {
-            Vector3 pos = PosMgr.GetComponent<PositionManager>().get_coords(w.x, w.y);
-            GameObject newWall = Instantiate(wallPrefab, pos, Quaternion.identity);
-            walls[w.order] = newWall;
-        }
-        else
-        {
-            Vector3 pos = PosMgr.GetComponent<PositionManager>().get_coords(w.x, w.y);
-            GameObject wall = walls[w.order];
-            wall.transform.position = pos;
-        }
+        yield return null;
     }
 
-    public void UpdatePoi(Poi p)
+    public IEnumerator UpdatePoi(Poi p)
     {
         GameObject human = positionManager.get_poi_human(p.x, p.y);
         GameObject unrevealed = positionManager.get_poi_unrevealed(p.x, p.y);
 
-        if (p.new_status == 0)
+        Debug.Log(p.new_status);
+
+        if (p.new_status == 0 || p.new_status == 5)
         {
             if (p.old_status == 3)
             {
-                StartCoroutine(positionManager.hide(unrevealed, 1, animationTime));
+                StartCoroutine(positionManager.hide(unrevealed, 0, animationTime));
             }
             if (p.old_status == 4)
             {
-                StartCoroutine(positionManager.hide(human, 1, animationTime));
+                StartCoroutine(positionManager.hide(human, 0, animationTime));
             }
         }
 
         if (p.new_status == 3)
         {
-            if (p.old_status == 0)
+            if (p.old_status == 0 || p.old_status == 3)
             {
-                StartCoroutine(positionManager.show(unrevealed, 1, animationTime));
+                StartCoroutine(positionManager.show(unrevealed, 0, animationTime));
             }
             if (p.old_status == 4)
             {
-                StartCoroutine(positionManager.hide(human, 1, animationTime));
-                StartCoroutine(positionManager.show(unrevealed, 1, animationTime));
+                StartCoroutine(positionManager.hide(human, 0, animationTime));
+                StartCoroutine(positionManager.show(unrevealed, 0, animationTime));
             }
         }
 
@@ -166,13 +196,15 @@ public class EntityManager : MonoBehaviour
         {
             if (p.old_status == 0)
             {
-                StartCoroutine(positionManager.show(human, 1, animationTime));
+                StartCoroutine(positionManager.show(human, 0, animationTime));
             }
             if (p.old_status == 3)
             {
-                StartCoroutine(positionManager.hide(unrevealed, 1, animationTime));
-                StartCoroutine(positionManager.show(human, 1, animationTime));
+                StartCoroutine(positionManager.hide(unrevealed, 0, animationTime));
+                StartCoroutine(positionManager.show(human, 0, animationTime));
             }
         }
+
+        yield return null;
     }
 }
