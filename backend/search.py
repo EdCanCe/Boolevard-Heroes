@@ -216,4 +216,14 @@ def closest_ghost(map: "Map", x, y):
      
     matrix = dijkstra(map, x, y, 2)
 
-    
+    closest_ghost = (0, 0, 1000)
+
+    for ghost in map.ghosts.ghost_list:
+        value = matrix[ghost[1]][ghost[0]].current_cost - len(map.ghosts.get_ghosty_neighbors(ghost[0], ghost[1]))
+
+        print(f"El valor es {value}")
+
+        if value < closest_ghost[2]:
+            closest_ghost = (ghost[0], ghost[1], value)
+
+    return generate_deque(matrix, x, y, closest_ghost[0], closest_ghost[1], True)

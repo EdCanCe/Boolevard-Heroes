@@ -41,11 +41,8 @@ class Ghosts:
         ]
 
         self.fog_list = [] # lista de casillas con niebla
+        self.ghost_list = [(2, 2), (2, 3), (3, 2), (3, 3), (4, 3), (4, 4), (5, 3), (6, 5), (6, 6), (7, 5)]
         self.added_damage = 0
-
-    # TODO: En los setters añadir si es fog:
-    self.hero.map.ghosts.fog_list.remove((self.action_x, self.action_y)) # TODO: Y si es fuego, removerlo de la lista de fuegogos
-    # ! Depende del valor anterior y posterior, ponerle append o remove
 
     def add_poi(self, poi : "POI"):
         # TODO: Comentar
@@ -94,6 +91,21 @@ class Ghosts:
     # Setter de celda
     def set_on(self, x, y, value):
         """Asigna un valor a la casilla (x, y)."""
+
+        current = self.dashboard[y][x]
+
+        if current == 1 and value != 1 and (x, y) in self.fog_list:
+            self.fog_list.remove((x, y))
+        
+        if current == 2 and value != 2 and (x, y) in self.ghost_list:
+            self.fog_list.remove((x, y))
+
+        if current != 1 and value == 1 and (x, y) not in self.fog_list:
+            self.fog_list.append((x, y))
+
+        if current != 2 and value == 2 and (x, y) not in self.ghost_list:
+            self.ghost_list.append((x, y))
+
         self.dashboard[y][x] = value
 
     # Vecinos con fantasmas
@@ -355,7 +367,7 @@ class Ghosts:
         (x, y) = self.generate_coords()
 
         if self.dashboard[y][x] == 0:
-            self.set_on(x, y, 0)  # Coloca niebla
+            self.set_on(x, y, 1)  # Coloca niebla
 
         elif self.dashboard[y][x] == 1: # Hay niebla
             self.place_ghost(x, y) # colocar fantasma
