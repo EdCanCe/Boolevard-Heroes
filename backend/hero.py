@@ -99,7 +99,7 @@ class Hero(Agent):
                     if self.movement_type == 0:
                         self.next_steps = closest_poi(self.map, self.id)
                         self.movement_type = 1
-                        if not self.next_steps or len(self.map.ghosts.ghost_list) / 80 > 0.30: # En caso de que está vacía lo lleva al fuego mejor o haya mucho fuego
+                        if not self.next_steps: # En caso de que está vacía lo lleva al fuego mejor o haya mucho fuego
                             self.next_steps = closest_ghost(self.map, self.x, self.y)
                             self.movement_type = 2
                     

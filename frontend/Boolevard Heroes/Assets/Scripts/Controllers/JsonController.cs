@@ -11,7 +11,7 @@ using System.Linq;
 public class JsonController : MonoBehaviour
 {
     // Variable goblal que hace referencia a una url para inicializar el juego
-    private string startUrl = "http://127.0.0.1:5000/start/naive";
+    private string startUrl = "http://127.0.0.1:5000/start/pro";
     // Variable global que hace raferencia a una url en la simulacion del juego
     private string stepUrl = "http://127.0.0.1:5000/turn";
 

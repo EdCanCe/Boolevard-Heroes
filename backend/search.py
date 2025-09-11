@@ -55,7 +55,7 @@ def neigbors_with_cost(map: "Map", x, y, movement_type):
 
     multiplier = 1
     if movement_type == 2: # En caso de que su intención sea quitar fantasmas
-        multiplier = 0.5
+        multiplier = 0.3
 
     # Las celdas adyacentes
     adyacent = map.walls.get_neighbors(x, y)
@@ -66,6 +66,7 @@ def neigbors_with_cost(map: "Map", x, y, movement_type):
         if current == 0:
             neighbors.append((neighbor[0], neighbor[1], 1))
         else:
+            if current == 2: multiplier /= 3
             neighbors.append((neighbor[0], neighbor[1], current * multiplier)) # Le aumenta su "costo" si quiere ir a un poi, para evitar fuegos
 
     for neighbor in doors:
@@ -73,6 +74,7 @@ def neigbors_with_cost(map: "Map", x, y, movement_type):
         if current == 0:
             neighbors.append((neighbor[0], neighbor[1], 2))
         else:
+            if current == 2: multiplier /= 3
             neighbors.append((neighbor[0], neighbor[1], current * multiplier + 1)) # Le aumenta su "costo" si quiere ir a un poi, para evitar fuegos
 
     return neighbors
