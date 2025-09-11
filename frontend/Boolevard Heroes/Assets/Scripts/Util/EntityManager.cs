@@ -10,11 +10,7 @@ public class EntityManager : MonoBehaviour
     private PositionManager positionManager;
 
     public GameObject agentPrefab;
-    public GameObject ghostPrefab;
-    public GameObject FogPrefab;
     public GameObject wallPrefab;
-    public GameObject poiPrefab;
-    public GameObject agentCarryingPrefab;
 
     private Dictionary<int, GameObject> agents = new Dictionary<int, GameObject>();
     private Dictionary<int, GameObject> walls = new Dictionary<int, GameObject>();
@@ -50,7 +46,6 @@ public class EntityManager : MonoBehaviour
             }
         }
     }
-
 
     public void InitializeMap()
     {
@@ -99,10 +94,28 @@ public class EntityManager : MonoBehaviour
         else
         {
             GameObject agent = agents[a.id];
+
+            GameObject normal = agent.transform.Find("AGENT").gameObject;
+            GameObject withPoi = agent.transform.Find("AGENT_POI").gameObject;
+
+            if (!withPoi.activeSelf && a.carrying)
+            {
+                withPoi.SetActive(true);
+                normal.SetActive(false);
+            }
+            else if (!normal.activeSelf && !a.carrying)
+            {
+                normal.SetActive(true);
+                withPoi.SetActive(false);
+            }
+
             Vector3 initialPos = agent.transform.position;
             Vector3 endPos = PosMgr.GetComponent<PositionManager>().get_coords(a.x, a.y);
+
             endPos.y = initialPos.y;
+
             StartCoroutine(PosMgr.GetComponent<PositionManager>().animateFrom(agent, initialPos, endPos, animationTime));
+
         }
 
         yield return null;

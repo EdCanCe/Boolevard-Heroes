@@ -99,7 +99,7 @@ class Hero(Agent):
                     if self.movement_type == 0:
                         self.next_steps = closest_poi(self.map, self.id)
                         self.movement_type = 1
-                        if not self.next_steps or len(self.map.ghosts.ghost_list) / 80 > 0.3: # En caso de que está vacía lo lleva al fuego mejor o haya mucho fuego
+                        if not self.next_steps or len(self.map.ghosts.ghost_list) / 80 > 0.20: # En caso de que está vacía lo lleva al fuego mejor o haya mucho fuego
                             self.next_steps = closest_ghost(self.map, self.x, self.y)
                             self.movement_type = 2
                     
@@ -216,6 +216,7 @@ class Hero(Agent):
                 if hero.has_victim: # Si estaba con una víctima, se asusta
                     hero.map.poi.scared_victims += 1
                     hero.has_victim = False
+                    hero.map.poi.current -= 1
 
                 hero.to_closest_spawn_point() # Lo lleva al spawnpoint
                 hero.stored_action_points = 0 # Se eliminan puntos de acción guardados

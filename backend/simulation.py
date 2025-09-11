@@ -1,4 +1,7 @@
 from imports import *
+from search import *
+
+iterations = 1000
 
 dead = 0
 rescued = 0
@@ -8,8 +11,6 @@ max_person = 0
 
 dead_losses = 0
 damage_losses = 0
-
-iterations = 1000
 
 for i in range(iterations):
     simulation = Map(False)
@@ -38,3 +39,5 @@ print(f"Total damage points: {damage}")
 print(f"Total wins: {wins} out of {iterations} ({wins/iterations * 100}%)")
 print(f"Dead losses: {dead_losses}")
 print(f"Damage losses: {damage_losses}")
+print("")
+print("")

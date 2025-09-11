@@ -180,7 +180,10 @@ def closest_poi(map: "Map", hero_id):
 
         # Obtiene la distancia de cada heroe del poi actual
         for hero in map.heroes_array:
-            heroes_distance.push(poi_matrix[hero.y][hero.x].current_cost, hero.id)
+            if hero.has_victim == False:
+                heroes_distance.push(poi_matrix[hero.y][hero.x].current_cost, hero.id)
+
+        # TODO: El fantasma no mata al poi -> unity
 
         closest_distance = heroes_distance.top()[0] # Obtiene la distancia que el héroe más cercano tiene al poi
 
