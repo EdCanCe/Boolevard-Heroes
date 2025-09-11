@@ -9,7 +9,9 @@ public class PositionManager : MonoBehaviour
 
     public Vector3 get_coords(int x, int y)
     {
-        return coordinates[y * 10 + x].transform.position;
+        Vector3 baseCoords = coordinates[y * 10 + x].transform.position;
+        baseCoords.y = 9f;
+        return baseCoords;
     }
 
     public GameObject get_ghost(int x, int y)
@@ -71,7 +73,7 @@ public class PositionManager : MonoBehaviour
 
         if (elementType == 0)
         {
-            endY = 9.56f;
+            endY = 4.56f;
         }
 
         Vector3 endPos = new Vector3(currentX, endY, currentZ);
@@ -88,7 +90,7 @@ public class PositionManager : MonoBehaviour
         yield return null;
     }
 
-    IEnumerator animateFrom(GameObject animatable, Vector3 posInicial, Vector3 posFinal, float tiempo)
+    public IEnumerator animateFrom(GameObject animatable, Vector3 posInicial, Vector3 posFinal, float tiempo)
     {
         float pasado = 0f;
 

@@ -264,9 +264,10 @@ class MoveWithVictim(Action):
         self.hero.update_position(self.action_x, self.action_y)
 
         # Verifica si acaba de salvar a la persona
-        if self.action_x in [0, 10] or self.action_y in [0, 8]:
+        if self.action_x in [0, 9] or self.action_y in [0, 7]:
             self.hero.map.poi.rescued_victims += 1
             self.hero.has_victim = False # Ya que ya salvó la víctima
+            self.hero.map.poi.current -= 1
 
         agent = {
             "x": self.action_x,

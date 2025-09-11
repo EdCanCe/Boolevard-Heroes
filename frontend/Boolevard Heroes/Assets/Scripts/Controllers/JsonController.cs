@@ -11,7 +11,7 @@ using System.Linq;
 public class JsonController : MonoBehaviour
 {
     // Variable goblal que hace referencia a una url para inicializar el juego
-    private string startUrl = "http://127.0.0.1:5000/start/naive";
+    private string startUrl = "http://127.0.0.1:5000/start/pro";
     // Variable global que hace raferencia a una url en la simulacion del juego
     private string stepUrl = "http://127.0.0.1:5000/turn";
 
@@ -158,23 +158,22 @@ public class JsonController : MonoBehaviour
 
             foreach (Agent a in s.agents)
             {
-                EntityManager.Instance.UpdateAgent(a);
-
+                StartCoroutine(EntityManager.Instance.UpdateAgent(a));
             }
 
             foreach (Ghost g in s.ghosts)
             {
-                EntityManager.Instance.UpdateGhost(g);
+                StartCoroutine(EntityManager.Instance.UpdateGhost(g));
             }
 
             foreach (Wall w in s.walls)
             {
-                EntityManager.Instance.UpdateWalls(w);
+                StartCoroutine(EntityManager.Instance.UpdateWalls(w));
             }
 
             foreach (Poi p in s.pois)
             {
-                EntityManager.Instance.UpdatePoi(p);
+                StartCoroutine(EntityManager.Instance.UpdatePoi(p));
             }
 
             yield return new WaitForSeconds(1f);
