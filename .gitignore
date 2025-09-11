@@ -11,10 +11,18 @@
 [Ll]ogs/
 [Uu]ser[Ss]ettings/
 *.log
+.DS_Store
+**/.DS_Store
+*/.DS_Store
+*.DS_Store
 
+.venv/
 env/
 *.env
 **/.ipynb_checkpoints/
+.vscode/
+test.ipynb
+todo.*
 
 __pycache__/
 
