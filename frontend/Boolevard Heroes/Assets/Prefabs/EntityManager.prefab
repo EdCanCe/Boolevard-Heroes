@@ -47,13 +47,14 @@ MonoBehaviour:
   PosMgr: {fileID: 0}
   agentPrefab: {fileID: 1175974366091629814, guid: 7c0b0634fadf63b49ab501d14e542ab4,
     type: 3}
-  ghostPrefab: {fileID: 1175974366091629814, guid: 7c0b0634fadf63b49ab501d14e542ab4,
+  ghostPrefab: {fileID: 919132149155446097, guid: a57276dcbbd094b918ed1b5e52b5d165,
     type: 3}
-  FogPrefab: {fileID: 1175974366091629814, guid: 7c0b0634fadf63b49ab501d14e542ab4,
+  FogPrefab: {fileID: 7966731087305637596, guid: 460babe280fe4aa41adc3fefd46f0c0b,
     type: 3}
   wallPrefab: {fileID: 4312454519546848895, guid: 0c49443cf89e74fab94b62689bd92415,
     type: 3}
   poiPrefab: {fileID: 8593464584776411535, guid: b21d155ec7ea5a349a0e36106f913148,
     type: 3}
-  agentCarryingPrefab: {fileID: 1175974366091629814, guid: 7c0b0634fadf63b49ab501d14e542ab4,
+  agentCarryingPrefab: {fileID: 6363650015917366236, guid: 7ed64753ef3624166a89f4abe5a7bdab,
     type: 3}
+  animationTime: 0.5

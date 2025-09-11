@@ -14,6 +14,9 @@ public class JsonController : MonoBehaviour
     private string startUrl = "http://127.0.0.1:5000/start/naive";
     // Variable global que hace raferencia a una url en la simulacion del juego
     private string stepUrl = "http://127.0.0.1:5000/turn";
+
+    private bool callNext;
+
     /// <summary>
     /// Start es llamado una sola vez al iniciar el script, y se valida que las urls
     /// sean validas y no esten vacias, ademas llama al servidor con la url de inicio
@@ -21,6 +24,8 @@ public class JsonController : MonoBehaviour
     /// </summary>
     void Start()
     {
+        callNext = true;
+
         // Se imprimen las urls en la consola para verificar que esten correctas
         Debug.Log($"startUrl='{startUrl}', stepUrl='{stepUrl}'");
         if(!string.IsNullOrWhiteSpace(startUrl) && !string.IsNullOrWhiteSpace(stepUrl))
@@ -44,8 +49,12 @@ public class JsonController : MonoBehaviour
         // Empieza el bucle en donde se espera 4 segundos para cada turno
         while (true)
         {
-            yield return StartCoroutine(GetYeison(stepUrl));
-            yield return new WaitForSeconds(4f);
+            if (callNext)
+            {
+                callNext = false;
+                yield return StartCoroutine(GetYeison(stepUrl));
+            }
+            yield return new WaitForSeconds(0.1f);
         }
     }
     /// <summary>
@@ -143,32 +152,35 @@ public class JsonController : MonoBehaviour
     {
         List<int> orders = steps.Keys.OrderBy(o => o).ToList();
 
-        foreach(int order in orders)
+        foreach (int order in orders)
         {
             Step s = steps[order];
 
-            foreach(Agent a in s.agents)
+            foreach (Agent a in s.agents)
             {
                 EntityManager.Instance.UpdateAgent(a);
+
             }
 
-            foreach(Ghost g in s.ghosts)
+            foreach (Ghost g in s.ghosts)
             {
                 EntityManager.Instance.UpdateGhost(g);
             }
 
-            foreach(Wall w in s.walls)
+            foreach (Wall w in s.walls)
             {
                 EntityManager.Instance.UpdateWalls(w);
             }
 
-            foreach(Poi p in s.pois)
+            foreach (Poi p in s.pois)
             {
                 EntityManager.Instance.UpdatePoi(p);
             }
 
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(1f);
         }
+
+        callNext = true;
     }
 
     /// <summary>
