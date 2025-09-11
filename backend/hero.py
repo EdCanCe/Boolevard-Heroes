@@ -47,7 +47,7 @@ class Hero(Agent):
     def step(self):
         """Realiza un turno."""
 
-        from actions import ActionList
+        from actions import ActionList, DoNothing
         from search import closest_poi, closest_exit, closest_ghost
 
         # Verifica si aún puede jugar
@@ -110,8 +110,13 @@ class Hero(Agent):
                     elif self.movement_type == 2: # Va a fantasmas
                         if not self.next_steps: # Si está vacía
                             self.next_steps = closest_ghost(self.map, self.x, self.y)
-                            
-                self.move_with_deque()
+
+                if not self.next_steps:
+                    action = DoNothing(0, self, 4)
+                    action.is_possible()
+                    action.do_action()
+                else:
+                    self.move_with_deque()
                 
             # Independientemente de la simulación, verifica si reveló POI
             if self.map.poi.get(self.x, self.y) == 3:
@@ -308,12 +313,6 @@ class Hero(Agent):
                 action.do_action()
                 return
             
-        # Verifica si se tiene que acabar el movimiento antes de llegar al fantasma
-        if self.movement_type == 2 and len(self.next_steps) == 1: # Es un fantasma y ya va a llegar
-            self.next_steps.popleft()
-            self.movement_type = 0
-            return
-            
         # Verifica si para llegar a su destino tiene que abrir una puerta
         if direction == 0 and self.map.walls.get_up(self.x, self.y) == 3:
             action = OpenDoor(1, self, direction)
@@ -353,6 +352,6 @@ class Hero(Agent):
             return
         
         # Si no pudo hacer ninguna de las anteriores, espera
-        action = DoNothing(0, self, direction)
+        action = DoNothing(0, self, 4)
         action.is_possible()
         action.do_action()

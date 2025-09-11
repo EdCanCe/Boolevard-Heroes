@@ -53,9 +53,9 @@ def neigbors_with_cost(map: "Map", x, y, movement_type):
 
     neighbors = []
 
-    multiplier = 3
+    multiplier = 1
     if movement_type == 2: # En caso de que su intención sea quitar fantasmas
-        multiplier = 1
+        multiplier = 0.3
 
     # Las celdas adyacentes
     adyacent = map.walls.get_neighbors(x, y)
@@ -110,6 +110,10 @@ def generate_deque(matrix: list[list[MapNode]], start_x, start_y, end_x, end_y, 
             next_steps.append((current_x, current_y))
 
         temp_x = current_x
+
+        if matrix[current_y][current_x].parent == None:
+            break
+
         current_x = matrix[current_y][current_x].parent.x
         current_y = matrix[current_y][temp_x].parent.y
 
@@ -135,8 +139,6 @@ def dijkstra(map: "Map", start_x, start_y, movement_type):
     while not left_to_visit.empty():
         (current_cost, (current_x, current_y)) = left_to_visit.top()
         left_to_visit.pop()
-
-        print(f"Processing node: ({current_x}, {current_y}), Queue size: {len(left_to_visit._PriorityQueue__data)}")
 
         neighbors = neigbors_with_cost(map, current_x, current_y, movement_type)
         for neighbor in neighbors:
@@ -201,8 +203,8 @@ def closest_poi(map: "Map", hero_id):
 
         next_steps = generate_deque(poi_matrix, map.poi.current_poi_coords[poi_id][0], map.poi.current_poi_coords[poi_id][1], map.heroes_array[hero_id].x, map.heroes_array[hero_id].y, False)
 
-        next_steps.popleft()
         next_steps.append(map.poi.current_poi_coords[poi_id])
+        next_steps.popleft()
         
     return next_steps
 
@@ -221,7 +223,7 @@ def closest_ghost(map: "Map", x, y):
     closest_ghost = (5, 4, 1000)
 
     for ghost in map.ghosts.ghost_list:
-        value = matrix[ghost[1]][ghost[0]].current_cost - len(map.ghosts.get_ghosty_neighbors(ghost[0], ghost[1]))
+        value = matrix[ghost[1]][ghost[0]].current_cost - len(map.ghosts.get_ghosty_neighbors(ghost[0], ghost[1])) * 2
 
         if value < closest_ghost[2]:
             closest_ghost = (ghost[0], ghost[1], value)
@@ -236,7 +238,7 @@ def closest_exit(map: "Map", x, y):
         x (int): La coordenada X del héroe
         y (int): La coordenada Y del héroe
     """
-     
+
     matrix = dijkstra(map, x, y, 1)
 
     closest = (0, 0, 1000)
