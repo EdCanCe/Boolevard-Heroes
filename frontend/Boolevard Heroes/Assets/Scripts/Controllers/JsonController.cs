@@ -1,6 +1,9 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
+using System.Collections.Generic;
+using System.Linq;
+
 /// <summary>
 /// This follow player controller class will update the events from the main camera .
 /// It will follow the pleyaer with a speciffic offset.
@@ -11,6 +14,9 @@ public class JsonController : MonoBehaviour
     private string startUrl = "http://127.0.0.1:5000/start/naive";
     // Variable global que hace raferencia a una url en la simulacion del juego
     private string stepUrl = "http://127.0.0.1:5000/turn";
+
+    private bool callNext;
+
     /// <summary>
     /// Start es llamado una sola vez al iniciar el script, y se valida que las urls
     /// sean validas y no esten vacias, ademas llama al servidor con la url de inicio
@@ -18,6 +24,8 @@ public class JsonController : MonoBehaviour
     /// </summary>
     void Start()
     {
+        callNext = true;
+
         // Se imprimen las urls en la consola para verificar que esten correctas
         Debug.Log($"startUrl='{startUrl}', stepUrl='{stepUrl}'");
         if(!string.IsNullOrWhiteSpace(startUrl) && !string.IsNullOrWhiteSpace(stepUrl))
@@ -41,8 +49,12 @@ public class JsonController : MonoBehaviour
         // Empieza el bucle en donde se espera 4 segundos para cada turno
         while (true)
         {
-            yield return StartCoroutine(GetYeison(stepUrl));
-            yield return new WaitForSeconds(4f);
+            if (callNext)
+            {
+                callNext = false;
+                yield return StartCoroutine(GetYeison(stepUrl));
+            }
+            yield return new WaitForSeconds(0.1f);
         }
     }
     /// <summary>
@@ -69,55 +81,153 @@ public class JsonController : MonoBehaviour
                     Debug.LogWarning("Ya no hay más YEISON.");
                     yield break;
                 }
-                PrintYeison(json);
+                Dictionary<int, Step> steps = BuildStepsFromJson(json);
+                StartCoroutine(GamePlay(steps));
             }
         }
     }
-    /// <summary>
-    /// Aqui se imprime el yeison en la consola para visualizar los datos
-    /// </summary>
-    void PrintYeison(string json)
+
+    Dictionary<int, Step> BuildStepsFromJson(string json)
     {
         Json data = JsonUtility.FromJson<Json>(json);
-        Debug.Log("YEISON:\n" + JsonUtility.ToJson(data, true));
+        Dictionary<int, Step> steps = new Dictionary<int, Step>();
 
-        // Verifica que el yeison no este vacio
         if(data == null)
         {
-            Debug.Log("Hola, no se paso bien el yeison o no coinciden los nombres");
-            return;
+            return steps;
         }
-        // Imprime los datos de los agentes
+
         if(data.agents != null)
         {
             foreach(Agent a in data.agents)
             {
-                Debug.Log($"Agent action={a.action}, id={a.id}, order={a.order}, energy={a.energy}, pos=({a.x}, {a.y}), carrying={a.carrying}");
+                if(!steps.ContainsKey(a.order))
+                {
+                    steps[a.order] = new Step();
+                }
+                steps[a.order].agents.Add(a);
             }
         }
-        // Imprime los datos de los fantasmas
+
         if(data.ghosts != null)
         {
             foreach(Ghost g in data.ghosts)
             {
-                Debug.Log($"Ghost order={g.order}, status={g.status}, pos=({g.x}, {g.y})");
+                if(!steps.ContainsKey(g.order))
+                {
+                    steps[g.order] = new Step();
+                }
+                steps[g.order].ghosts.Add(g);
             }
         }
-        // Imprime los datos de las paredes
+
         if(data.walls != null)
         {
             foreach(Wall w in data.walls)
             {
-                Debug.Log($"Wall order={w.order}, dir={w.direction}, status={w.status}, pos=({w.x},{w.y})");
+                if(!steps.ContainsKey(w.order))
+                {
+                    steps[w.order] = new Step();
+                }
+                steps[w.order].walls.Add(w);
             }
         }
-        // Imprime los datos de los pois
+
         if(data.pois != null)
         {
             foreach(Poi p in data.pois)
             {
-                Debug.Log($"Poi order={p.order}, old={p.old_status}, new={p.new_status}, pos=({p.x},{p.y})");
+                if(!steps.ContainsKey(p.order))
+                {
+                    steps[p.order] = new Step();
+                }
+                steps[p.order].pois.Add(p);
             }
         }
+
+        return steps;
     }
+
+    IEnumerator GamePlay(Dictionary<int, Step> steps)
+    {
+        List<int> orders = steps.Keys.OrderBy(o => o).ToList();
+
+        foreach (int order in orders)
+        {
+            Step s = steps[order];
+
+            foreach (Agent a in s.agents)
+            {
+                EntityManager.Instance.UpdateAgent(a);
+
+            }
+
+            foreach (Ghost g in s.ghosts)
+            {
+                EntityManager.Instance.UpdateGhost(g);
+            }
+
+            foreach (Wall w in s.walls)
+            {
+                EntityManager.Instance.UpdateWalls(w);
+            }
+
+            foreach (Poi p in s.pois)
+            {
+                EntityManager.Instance.UpdatePoi(p);
+            }
+
+            yield return new WaitForSeconds(1f);
+        }
+
+        callNext = true;
+    }
+
+    /// <summary>
+    /// Aqui se imprime el yeison en la consola para visualizar los datos
+    /// </summary>
+    // void PrintYeison(string json)
+    // {
+    //     Json data = JsonUtility.FromJson<Json>(json);
+    //     Debug.Log("YEISON:\n" + JsonUtility.ToJson(data, true));
+
+    //     // Verifica que el yeison no este vacio
+    //     if(data == null)
+    //     {
+    //         Debug.Log("Hola, no se paso bien el yeison o no coinciden los nombres");
+    //         return;
+    //     }
+    //     // Imprime los datos de los agentes
+    //     if(data.agents != null)
+    //     {
+    //         foreach(Agent a in data.agents)
+    //         {
+    //             Debug.Log($"Agent action={a.action}, id={a.id}, order={a.order}, energy={a.energy}, pos=({a.x}, {a.y}), carrying={a.carrying}");
+    //         }
+    //     }
+    //     // Imprime los datos de los fantasmas
+    //     if(data.ghosts != null)
+    //     {
+    //         foreach(Ghost g in data.ghosts)
+    //         {
+    //             Debug.Log($"Ghost order={g.order}, status={g.status}, pos=({g.x}, {g.y})");
+    //         }
+    //     }
+    //     // Imprime los datos de las paredes
+    //     if(data.walls != null)
+    //     {
+    //         foreach(Wall w in data.walls)
+    //         {
+    //             Debug.Log($"Wall order={w.order}, dir={w.direction}, status={w.status}, pos=({w.x},{w.y})");
+    //         }
+    //     }
+    //     // Imprime los datos de los pois
+    //     if(data.pois != null)
+    //     {
+    //         foreach(Poi p in data.pois)
+    //         {
+    //             Debug.Log($"Poi order={p.order}, old={p.old_status}, new={p.new_status}, pos=({p.x},{p.y})");
+    //         }
+    //     }
+    // }
 }

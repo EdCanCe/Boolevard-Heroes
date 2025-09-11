@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7022856834322424552
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6630164516122082337}
+  - component: {fileID: 100578462694195314}
+  m_Layer: 0
+  m_Name: EntityManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6630164516122082337
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7022856834322424552}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.3857, y: 1.66999, z: 2.3857}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &100578462694195314
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7022856834322424552}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28813ec0812cbf9469cdda7f9af0443f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EntityManager
+  PosMgr: {fileID: 0}
+  agentPrefab: {fileID: 1175974366091629814, guid: 7c0b0634fadf63b49ab501d14e542ab4,
+    type: 3}
+  ghostPrefab: {fileID: 919132149155446097, guid: a57276dcbbd094b918ed1b5e52b5d165,
+    type: 3}
+  FogPrefab: {fileID: 7966731087305637596, guid: 460babe280fe4aa41adc3fefd46f0c0b,
+    type: 3}
+  wallPrefab: {fileID: 4312454519546848895, guid: 0c49443cf89e74fab94b62689bd92415,
+    type: 3}
+  poiPrefab: {fileID: 8593464584776411535, guid: b21d155ec7ea5a349a0e36106f913148,
+    type: 3}
+  agentCarryingPrefab: {fileID: 6363650015917366236, guid: 7ed64753ef3624166a89f4abe5a7bdab,
+    type: 3}
+  animationTime: 0.5
