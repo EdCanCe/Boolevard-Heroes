@@ -87,12 +87,13 @@ class Map(Model):
         juego ya acabó o aún no.
         """
 
-        if self.poi.scared_victims >= 4 or self.damage_points >= 24:
-            self.win = False
-            return True
-        
         if self.poi.rescued_victims >= 7:
             self.win = True
+            return True
+        
+        if self.poi.scared_victims >= 4 or self.damage_points >= 24:
+            if self.damage_points > 24: self.damage_points = 24
+            self.win = False
             return True
         
         return False
