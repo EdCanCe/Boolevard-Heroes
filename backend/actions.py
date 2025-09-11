@@ -1,5 +1,6 @@
 from imports import *
 
+# ChatGPT me mostró que al usar typing, no se añade al runtime y solo ayuda en el editor
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from walls import *
@@ -45,24 +46,16 @@ class ActionList:
         # Si no tiene víctima, puede pasar por el fuego o caminar normal
         else:
             if hero.map.walls.get_up(x, y) in free_path:
-                if hero.map.ghosts.get_up(x, y) == 2:
-                    possible_actions.append(MoveIntoGhost(2, hero, 0))
-                else:
+                if hero.map.ghosts.get_up(x, y) != 2:
                     possible_actions.append(Move(1, hero, 0))
             if hero.map.walls.get_right(x, y) in free_path:
-                if hero.map.ghosts.get_right(x, y) == 2:
-                    possible_actions.append(MoveIntoGhost(2, hero, 1))
-                else:
+                if hero.map.ghosts.get_right(x, y) != 2:
                     possible_actions.append(Move(1, hero, 1))
             if hero.map.walls.get_down(x, y) in free_path:
-                if hero.map.ghosts.get_down(x, y) == 2:
-                    possible_actions.append(MoveIntoGhost(2, hero, 2))
-                else:
+                if hero.map.ghosts.get_down(x, y) != 2:
                     possible_actions.append(Move(1, hero, 2))
             if hero.map.walls.get_left(x, y) in free_path:
-                if hero.map.ghosts.get_left(x, y) == 2:
-                    possible_actions.append(MoveIntoGhost(2, hero, 3))
-                else:
+                if hero.map.ghosts.get_left(x, y) != 2:
                     possible_actions.append(Move(1, hero, 3))
 
         # Se añaden las posibilidades de abrir puertas
@@ -148,7 +141,7 @@ class ActionList:
 class Action(ABC):
     """Clase abstracta de acción posible a realizar.
     """
-    def __init__(self, action_points, hero: Hero, direction):
+    def __init__(self, action_points, hero: "Hero", direction):
         """Constructor de la clase de acción
 
         Args:
@@ -291,39 +284,6 @@ class MoveWithVictim(Action):
         self.hero.json["agents"].append(agent)
 
         return True
-
-class MoveIntoGhost(Action):
-    """Mueve el héroe a otra casilla que tenga un
-    fantasma dentro de ella.
-    """
-
-    def is_possible(self):
-        return False
-        return super().is_possible()
-
-    def do_action(self):
-        """Mueve al héroe a la casilla con el fantasma."""
-
-        super().do_action()
-
-        self.hero.update_position(self.action_x, self.action_y)
-
-        # TODO: Verificar que no se quede dentro del fuego
-        agent = {
-            "x": self.action_x,
-            "y": self.action_y,
-            "id": self.hero.id,
-            "carrying": self.hero.has_victim,
-            "energy": self.hero.action_points,
-            "action": "héroe entrado al fantasma",
-            "order": self.hero.order
-        }
-
-        self.hero.json["agents"].append(agent)
-
-        # ! Se modifica el método de requisito, se verifica que en la nueva posición, restándole los puntos, tenga otra posible acción. Y dentro del arreglo de generación
-
-        # ! O mas bien añadir una especie de bfs dentro de la generación del arreglo/
 
 class OpenDoor(Action):
     """Abre una puerta alrededor del héroe."""
@@ -522,8 +482,6 @@ class ClearFog(Action):
 
         self.hero.map.ghosts.set_on(self.action_x, self.action_y, 0)
 
-        self.hero.map.ghosts.fog_list.remove((self.action_x, self.action_y))
-
         agent = {
             "x": self.current_x,
             "y": self.current_y,
@@ -566,7 +524,6 @@ class ScareGhost(Action):
         super().do_action()
 
         self.hero.map.ghosts.set_on(self.action_x, self.action_y, 1)
-        self.hero.map.ghosts.fog_list.append((self.action_x, self.action_y))
 
         agent = {
             "x": self.current_x,

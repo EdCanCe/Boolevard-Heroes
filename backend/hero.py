@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from ghosts import *
     from map import *
     from actions import *
+    from search import *
 
 class Hero(Agent):
     """El héroe que hará acciones por el mapa para tratar
@@ -46,7 +47,8 @@ class Hero(Agent):
     def step(self):
         """Realiza un turno."""
 
-        from actions import ActionList
+        from actions import ActionList, DoNothing
+        from search import closest_poi, closest_exit, closest_ghost
 
         # Verifica si aún puede jugar
         if self.map.game_over():
@@ -67,6 +69,11 @@ class Hero(Agent):
 
         self.order = 0 # orden dentro del turno en que se realiza una accion
 
+        action_type = 0 # dicta qué tipo de acción se hará
+
+        self.next_steps = deque()
+        self.movement_type = 0
+
         # Realiza acciones hasta quedarse sin puntos
         while self.action_points > 0:
             # Verifica si se hace un movimiento naive, o con strat
@@ -82,10 +89,46 @@ class Hero(Agent):
                     else: # Si no pudo hacerla, restaura los puntos de acción
                         action.restore_action_points()
 
-            else: # TODO: Simulación con estrategia
-                print("")
+            # Movimiento con estrategia
+            else:
+                if self.has_victim:
+                    if not self.next_steps: # Si está vacía
+                        self.next_steps = closest_exit(self.map, self.x, self.y)
 
+                else: # Si no tiene víctima
+                    if self.movement_type == 0:
+                        self.next_steps = closest_poi(self.map, self.id)
+                        self.movement_type = 1
+                        if not self.next_steps or len(self.map.ghosts.ghost_list) / 80 > 0.30: # En caso de que está vacía lo lleva al fuego mejor o haya mucho fuego
+                            self.next_steps = closest_ghost(self.map, self.x, self.y)
+                            self.movement_type = 2
+                    
+                    if self.movement_type == 1: # Va a poi
+                        if not self.next_steps: # Si está vacía
+                            self.next_steps = closest_poi(self.map, self.id)
+
+                    elif self.movement_type == 2: # Va a fantasmas
+                        if not self.next_steps: # Si está vacía
+                            self.next_steps = closest_ghost(self.map, self.x, self.y)
+                            """
+                    
+                    if self.id <= 4:
+                        self.next_steps = closest_poi(self.map, self.id)
+                        self.movement_type = 1
+                    if not self.next_steps or self.id > 4: # En caso de que está vacía lo lleva al fuego mejor o haya mucho fuego
+                        self.next_steps = closest_ghost(self.map, self.x, self.y)
+                        self.movement_type = 2   
+                        """
+
+                if not self.next_steps:
+                    action = DoNothing(0, self, 4)
+                    action.is_possible()
+                    action.do_action()
+                else:
+                    self.move_with_deque()
+                
             # Independientemente de la simulación, verifica si reveló POI
+            # TODO: Verificar en TODOS los agentes, pq el poi podría caer dios quiera en la casilla de la persona
             if self.map.poi.get(self.x, self.y) == 3:
                 new_poi_value = self.map.poi.pick(self.x, self.y)
 
@@ -99,7 +142,7 @@ class Hero(Agent):
 
                 self.json["pois"].append(poi)
 
-                if new_poi_value  == 4: # Si es una víctima real
+                if new_poi_value == 4: # Si es una víctima real
                     if not self.has_victim: # En caso de que no lleve a nadie
                         self.hold_poi_on(self.x, self.y)
 
@@ -161,6 +204,12 @@ class Hero(Agent):
         self.order += 1
 
         for hero in self.map.heroes_array:
+            # TODO: No mata al heroe si es expandido por el fuego
+            # TODO: En el json agregar el poi en el MISMO turno
+            # TODO: Añadir romper paredes solo si el daño es menor
+            # TODO: Añadir que un agente esté vinculado en específico a un POI, cuando se salva, se ponen a otros
+            # TODO: Añadir una lista de eventos, y que solo sea posible vincularse a una, si alguien más no está vinculada
+            # TODO: Al momento de decidir a cuál POI irías, verificar la distancia que otros héroes tienen, si eres el 2do podrías ir? pero ya si eres el 3ro, ne
             if hero.map.ghosts.get_on(hero.x, hero.y): # Si se extendieron los fantasmas a mi casilla
                 if hero.has_victim: # Si estaba con una víctima, se asusta
                     hero.map.poi.scared_victims += 1
@@ -228,3 +277,95 @@ class Hero(Agent):
         }
 
         self.json["pois"].append(poi)
+
+    def get_direction(self, new_x, new_y):
+        if new_y < self.y: return 0
+        if new_x > self.x: return 1
+        if new_y > self.y: return 2
+        if new_x < self.x: return 3
+        return 4
+
+    def move_with_deque(self):
+        """Mueve un agente basándose en una deque y el ambiente actual."""
+
+        from actions import Move, MoveWithVictim, OpenDoor, ClearFog, RemoveGhost, DoNothing
+
+        # Front = Left = 0 ; Back = nada = -1
+        (next_x, next_y) = self.next_steps[0]
+
+        direction = self.get_direction(next_x, next_y) # La dirección de movimiento
+
+        # Verifica si su destino tiene niebla y lo elimina
+        if self.map.ghosts.get_on(next_x, next_y) == 1:
+            action = ClearFog(1, self, direction)
+            if action.is_possible():
+                action.do_action()
+                return
+            
+        # Verifica si su destino tiene fantasma y lo elimina
+        if self.map.ghosts.get_on(next_x, next_y) == 2:
+            action = RemoveGhost(2, self, direction)
+            if action.is_possible():
+                action.do_action()
+                return
+
+        # Despeja fantasma de sus vecinos dependiendo de su tipo de movimiento
+        if self.movement_type == 2: # Está tratando de eliminar un fantasma
+            neighbors = self.map.ghosts.get_ghosty_neighbors(self.x, self.y)
+            #TODO: Verificar si si son fantasmas, elimino algo que no era y pierden puntos??
+            for neighbor in neighbors:
+                action = RemoveGhost(2, self, direction)
+                if action.is_possible():
+                    action.do_action()
+                    return
+        
+            # Despeja niebla de sus vecinos
+            neighbors = self.map.ghosts.get_foggy_neighbors(self.x, self.y)
+            for neighbor in neighbors:
+                action = ClearFog(1, self, direction)
+                if action.is_possible():
+                    action.do_action()
+                    return
+            
+        # Verifica si para llegar a su destino tiene que abrir una puerta
+        if direction == 0 and self.map.walls.get_up(self.x, self.y) == 3:
+            action = OpenDoor(1, self, direction)
+            if action.is_possible():
+                action.do_action()
+                return
+        if direction == 1 and self.map.walls.get_right(self.x, self.y) == 3:
+            action = OpenDoor(1, self, direction)
+            if action.is_possible():
+                action.do_action()
+                return
+        if direction == 2 and self.map.walls.get_down(self.x, self.y) == 3:
+            action = OpenDoor(1, self, direction)
+            if action.is_possible():
+                action.do_action()
+                return
+        if direction == 3 and self.map.walls.get_left(self.x, self.y) == 3:
+            action = OpenDoor(1, self, direction)
+            if action.is_possible():
+                action.do_action()
+                return
+
+        # Al quitar fantasmas, nieblas y liberar su camino, avanza
+        if self.has_victim:
+            action = MoveWithVictim(2, self, direction)
+        else:
+            action = Move(1, self, direction)
+
+        if action.is_possible():
+            self.next_steps.popleft()
+
+            # Si ya no tiene más pasos (llegó), libera el movement
+            if not self.next_steps:
+                self.movement_type = 0
+
+            action.do_action()
+            return
+        
+        # Si no pudo hacer ninguna de las anteriores, espera
+        action = DoNothing(0, self, 4)
+        action.is_possible()
+        action.do_action()
