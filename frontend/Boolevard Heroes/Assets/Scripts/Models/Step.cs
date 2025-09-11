@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 
 
-public class Step : MonoBehaviour
+public class Step
 {
     public List<Agent> agents = new List<Agent>();
     public List<Ghost> ghosts = new List<Ghost>();
