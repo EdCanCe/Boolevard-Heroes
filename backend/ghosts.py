@@ -98,7 +98,7 @@ class Ghosts:
             self.fog_list.remove((x, y))
         
         if current == 2 and value != 2 and (x, y) in self.ghost_list:
-            self.fog_list.remove((x, y))
+            self.ghost_list.remove((x, y))
 
         if current != 1 and value == 1 and (x, y) not in self.fog_list:
             self.fog_list.append((x, y))

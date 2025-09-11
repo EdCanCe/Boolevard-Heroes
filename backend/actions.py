@@ -141,7 +141,7 @@ class ActionList:
 class Action(ABC):
     """Clase abstracta de acción posible a realizar.
     """
-    def __init__(self, action_points, hero: Hero, direction):
+    def __init__(self, action_points, hero: "Hero", direction):
         """Constructor de la clase de acción
 
         Args:

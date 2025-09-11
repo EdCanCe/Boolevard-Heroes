@@ -48,6 +48,7 @@ class Hero(Agent):
         """Realiza un turno."""
 
         from actions import ActionList
+        from search import closest_poi, closest_exit, closest_ghost
 
         # Verifica si aún puede jugar
         if self.map.game_over():
@@ -88,32 +89,29 @@ class Hero(Agent):
                     else: # Si no pudo hacerla, restaura los puntos de acción
                         action.restore_action_points()
 
-            # ! Movimiento con estrategia
+            # Movimiento con estrategia
             else:
                 if self.has_victim:
                     if not self.next_steps: # Si está vacía
-                        # TODO: Llena la deque con la salida más cercana
-                        pass
+                        self.next_steps = closest_exit(self.map, self.x, self.y)
 
                 else: # Si no tiene víctima
                     if self.movement_type == 0:
-                        # TODO: Verifica si le conviene ir por poi o fantasmas
-                        # TODO: Cambio el movement type a lo correspondiente
-                        pass
+                        self.next_steps = closest_poi(self.map, self.id)
+                        self.movement_type = 1
+                        if not self.next_steps: # En caso de que está vacía lo lleva al fuego mejor
+                            self.next_steps = closest_ghost(self.map, self.x, self.y)
+                            self.movement_type = 2
                     
                     if self.movement_type == 1: # Va a poi
                         if not self.next_steps: # Si está vacía
-                            # TODO: Llena la deque con el camino hacia el poi
-                            pass
+                            self.next_steps = closest_poi(self.map, self.id)
 
                     elif self.movement_type == 2: # Va a fantasmas
                         if not self.next_steps: # Si está vacía
-                            # TODO: Llena la deque con el camino hacia el fantasma
-                            # ! En el move_with_deque, si es ir a fantasmas y el deque ya solo tiene 1 elemento (pq le falta 1 casilla y se es adyacente), hacer pop para vaciarlo ANTES de las puertas 
-                            pass
+                            self.next_steps = closest_ghost(self.map, self.x, self.y)
                             
-                
-                self.move_with_deque(self.movement_type)
+                self.move_with_deque()
                 
             # Independientemente de la simulación, verifica si reveló POI
             if self.map.poi.get(self.x, self.y) == 3:
@@ -191,6 +189,8 @@ class Hero(Agent):
         self.order += 1
 
         for hero in self.map.heroes_array:
+            # TODO: No mata al heroe si es expandido por el fuego
+            # TODO: En el json agregar el poi en el MISMO turno
             if hero.map.ghosts.get_on(hero.x, hero.y): # Si se extendieron los fantasmas a mi casilla
                 if hero.has_victim: # Si estaba con una víctima, se asusta
                     hero.map.poi.scared_victims += 1
@@ -269,6 +269,8 @@ class Hero(Agent):
     def move_with_deque(self):
         """Mueve un agente basándose en una deque y el ambiente actual."""
 
+        from actions import Move, MoveWithVictim, OpenDoor, ClearFog, RemoveGhost, DoNothing
+
         # Front = Left = 0 ; Back = nada = -1
         (next_x, next_y) = self.next_steps[0]
 
@@ -291,6 +293,7 @@ class Hero(Agent):
         # Despeja fantasma de sus vecinos dependiendo de su tipo de movimiento
         if self.movement_type == 2: # Está tratando de eliminar un fantasma
             neighbors = self.map.ghosts.get_ghosty_neighbors(self.x, self.y)
+            #TODO: Verificar si si son fantasmas, elimino algo que no era
             for neighbor in neighbors:
                 action = RemoveGhost(2, self, direction)
                 if action.is_possible():
@@ -338,6 +341,7 @@ class Hero(Agent):
             action = MoveWithVictim(2, self, direction)
         else:
             action = Move(1, self, direction)
+
         if action.is_possible():
             self.next_steps.popleft()
 
@@ -345,9 +349,10 @@ class Hero(Agent):
             if not self.next_steps:
                 self.movement_type = 0
 
-            action.do_action
+            action.do_action()
             return
         
         # Si no pudo hacer ninguna de las anteriores, espera
         action = DoNothing(0, self, direction)
+        action.is_possible()
         action.do_action()
