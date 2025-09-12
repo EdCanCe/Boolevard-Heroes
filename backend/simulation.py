@@ -35,7 +35,7 @@ for j in range(1000):
 
     win_rate = wins / iterations * 100
 
-    if win_rate >= 15:
+    if win_rate >= 10:
         print(f"Run {j+1}/{1000}")
         print(f"Total rescued victims: {rescued}")
         print(f"Max rescued victims: {max_person}")

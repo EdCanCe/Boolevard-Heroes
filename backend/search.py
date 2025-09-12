@@ -53,9 +53,9 @@ def neigbors_with_cost(map: "Map", x, y, movement_type):
 
     neighbors = []
 
-    multiplier = 0.9
+    multiplier = 1
     if movement_type == 2: # En caso de que su intención sea quitar fantasmas
-        multiplier = 1.5
+        multiplier = 0.8
 
     # Las celdas adyacentes
     adyacent = map.walls.get_neighbors(x, y)
@@ -228,7 +228,7 @@ def closest_ghost(map: "Map", x, y):
     closest_ghost = (5, 4, 1000)
 
     for ghost in map.ghosts.ghost_list:
-        value = matrix[ghost[1]][ghost[0]].current_cost - len(map.ghosts.get_ghosty_neighbors(ghost[0], ghost[1])) * 2
+        value = matrix[ghost[1]][ghost[0]].current_cost - len(map.ghosts.get_ghosty_neighbors(ghost[0], ghost[1])) * 3
 
         if value < closest_ghost[2]:
             closest_ghost = (ghost[0], ghost[1], value)

@@ -99,7 +99,7 @@ class Hero(Agent):
                     if self.movement_type == 0:
                         self.next_steps = closest_poi(self.map, self.id)
                         self.movement_type = 1
-                        if not self.next_steps or len(self.map.ghosts.ghost_list) / 80 > 0.18: # En caso de que está vacía lo lleva al fuego mejor o haya mucho fuego
+                        if not self.next_steps or len(self.map.ghosts.ghost_list) / 80 > 0.2: # En caso de que está vacía lo lleva al fuego mejor o haya mucho fuego
                             self.next_steps = closest_ghost(self.map, self.x, self.y)
                             self.movement_type = 2
                     
@@ -325,21 +325,21 @@ class Hero(Agent):
                 return
 
         # Despeja fantasma de sus vecinos dependiendo de su tipo de movimiento
-        if self.movement_type == 2: # Está tratando de eliminar un fantasma
-            neighbors = self.map.ghosts.get_ghosty_neighbors(self.x, self.y)
-            for neighbor in neighbors:
-                action = RemoveGhost(2, self, self.get_direction(neighbor[0], neighbor[1]))
-                if action.is_possible():
-                    action.do_action()
-                    return
-        
-            # Despeja niebla de sus vecinos
-            neighbors = self.map.ghosts.get_foggy_neighbors(self.x, self.y)
-            for neighbor in neighbors:
-                action = ClearFog(1, self, self.get_direction(neighbor[0], neighbor[1]))
-                if action.is_possible():
-                    action.do_action()
-                    return
+        #if self.movement_type == 2: # Está tratando de eliminar un fantasma
+        neighbors = self.map.ghosts.get_ghosty_neighbors(self.x, self.y)
+        for neighbor in neighbors:
+            action = RemoveGhost(2, self, self.get_direction(neighbor[0], neighbor[1]))
+            if action.is_possible():
+                action.do_action()
+                return
+    
+        # Despeja niebla de sus vecinos
+        neighbors = self.map.ghosts.get_foggy_neighbors(self.x, self.y)
+        for neighbor in neighbors:
+            action = ClearFog(1, self, self.get_direction(neighbor[0], neighbor[1]))
+            if action.is_possible():
+                action.do_action()
+                return
             
         # Verifica si para llegar a su destino tiene que abrir una puerta
         if direction == 0 and self.map.walls.get_up(self.x, self.y) == 3:
