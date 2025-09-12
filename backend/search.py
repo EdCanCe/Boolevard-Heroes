@@ -55,7 +55,7 @@ def neigbors_with_cost(map: "Map", x, y, movement_type):
 
     multiplier = 1
     if movement_type == 2: # En caso de que su intención sea quitar fantasmas
-        multiplier = 0.2
+        multiplier = 0.8
 
     # Las celdas adyacentes
     adyacent = map.walls.get_neighbors(x, y)
@@ -175,12 +175,15 @@ def closest_poi(map: "Map", hero_id):
     # Para cada POI
     i = 0
     for poi in map.poi.current_poi_coords:
-        poi_matrix = dijkstra(map, poi[0], poi[1], 1)
+        poi_matrix = dijkstra(map, poi[0], poi[1], 2)
         heroes_distance = PriorityQueue()
 
         # Obtiene la distancia de cada heroe del poi actual
         for hero in map.heroes_array:
-            heroes_distance.push(poi_matrix[hero.y][hero.x].current_cost, hero.id)
+            if hero.has_victim == False:
+                heroes_distance.push(poi_matrix[hero.y][hero.x].current_cost, hero.id)
+
+        # TODO: El fantasma no mata al poi -> unity
 
         closest_distance = heroes_distance.top()[0] # Obtiene la distancia que el héroe más cercano tiene al poi
 
@@ -225,7 +228,7 @@ def closest_ghost(map: "Map", x, y):
     closest_ghost = (5, 4, 1000)
 
     for ghost in map.ghosts.ghost_list:
-        value = matrix[ghost[1]][ghost[0]].current_cost - len(map.ghosts.get_ghosty_neighbors(ghost[0], ghost[1])) * 2
+        value = matrix[ghost[1]][ghost[0]].current_cost - len(map.ghosts.get_ghosty_neighbors(ghost[0], ghost[1])) * 3
 
         if value < closest_ghost[2]:
             closest_ghost = (ghost[0], ghost[1], value)
