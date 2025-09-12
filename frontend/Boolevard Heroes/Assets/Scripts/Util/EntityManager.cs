@@ -13,7 +13,8 @@ public class EntityManager : MonoBehaviour
     public GameObject wallPrefab;
 
     private Dictionary<int, GameObject> agents = new Dictionary<int, GameObject>();
-    private Dictionary<int, GameObject> walls = new Dictionary<int, GameObject>();
+    private Dictionary<float, GameObject> horizontalWalls = new Dictionary<float, GameObject>();
+    private Dictionary<float, GameObject> verticalWalls = new Dictionary<float, GameObject>();
 
     private int left_movements;
 
@@ -81,6 +82,74 @@ public class EntityManager : MonoBehaviour
         pos = PosMgr.GetComponent<PositionManager>().get_coords(5, 0);
         newAgent = Instantiate(agentPrefab, pos, Quaternion.identity);
         agents[6] = newAgent;
+
+        Wall w = new Wall
+        {
+            direction = 3,
+            order = 0,
+            status = 3,
+            x = 4,
+            y = 1,
+        };
+        StartCoroutine(UpdateWalls(w));
+
+        w.x = 5;
+        w.y = 2;
+        w.direction = 1;
+        StartCoroutine(UpdateWalls(w));
+
+        w.x = 8;
+        w.y = 2;
+        w.direction = 2;
+        StartCoroutine(UpdateWalls(w));
+
+        w.x = 7;
+        w.y = 4;
+        w.direction = 3;
+        StartCoroutine(UpdateWalls(w));
+
+        w.x = 3;
+        w.y = 3;
+        w.direction = 3;
+        StartCoroutine(UpdateWalls(w));
+
+        w.x = 4;
+        w.y = 4;
+        w.direction = 2;
+        StartCoroutine(UpdateWalls(w));
+
+        w.x = 6;
+        w.y = 6;
+        w.direction = 3;
+        StartCoroutine(UpdateWalls(w));
+
+        w.x = 8;
+        w.y = 6;
+        w.direction = 3;
+        StartCoroutine(UpdateWalls(w));
+
+        w.status = 2;
+
+        w.x = 6;
+        w.y = 0;
+        w.direction = 2;
+        StartCoroutine(UpdateWalls(w));
+
+        w.x = 0;
+        w.y = 3;
+        w.direction = 1;
+        StartCoroutine(UpdateWalls(w));
+
+        w.x = 3;
+        w.y = 7;
+        w.direction = 0;
+        StartCoroutine(UpdateWalls(w));
+
+        w.x = 9;
+        w.y = 4;
+        w.direction = 3;
+        StartCoroutine(UpdateWalls(w));
+        
     }
 
     public IEnumerator UpdateAgent(Agent a)
@@ -123,8 +192,11 @@ public class EntityManager : MonoBehaviour
 
     public IEnumerator UpdateGhost(Ghost g)
     {
+        GameObject human = positionManager.get_poi_human(g.x, g.y);
+        GameObject unrevealed = positionManager.get_poi_unrevealed(g.x, g.y);
         GameObject ghost = positionManager.get_ghost(g.x, g.y);
         GameObject fog = positionManager.get_fog(g.x, g.y);
+
         bool ghostFlag = false;
 
         if (g.status == 2)
@@ -165,11 +237,103 @@ public class EntityManager : MonoBehaviour
             StartCoroutine(positionManager.hide(fog, 1, animationTime));
         }
 
+        if (human.activeSelf)
+        {
+            human.SetActive(false);
+        }
+
+        if (unrevealed.activeSelf)
+        {
+            unrevealed.SetActive(false);
+        }
+
         yield return null;
     }
 
     public IEnumerator UpdateWalls(Wall w)
     {
+        bool isHorizontal = w.direction % 2 == 0;
+        float x = w.x, y = w.y;
+
+        Vector3 originalPos = PosMgr.GetComponent<PositionManager>().get_coords(w.x, w.y);
+        Vector3 actionPos;
+
+        switch (w.direction)
+        {
+            case 0:
+                actionPos = PosMgr.GetComponent<PositionManager>().get_coords(w.x, w.y - 1);
+                y -= 0.5f;
+                break;
+            case 1:
+                actionPos = PosMgr.GetComponent<PositionManager>().get_coords(w.x + 1, w.y);
+                x -= 0.5f;
+                break;
+            case 2:
+                actionPos = PosMgr.GetComponent<PositionManager>().get_coords(w.x, w.y + 1);
+                x += 0.5f;
+                break;
+            default:
+                actionPos = PosMgr.GetComponent<PositionManager>().get_coords(w.x - 1, w.y);
+                y += 0.5f;
+                break;
+        }
+
+        actionPos = (actionPos + originalPos) / 2;
+
+        actionPos.y = 10;
+        float position = y * 10 + x;
+        GameObject editableToken;
+
+        if (isHorizontal)
+        {
+            if (!horizontalWalls.ContainsKey(position))
+            {
+                GameObject newWallToken = Instantiate(wallPrefab, actionPos, Quaternion.identity);
+                horizontalWalls[position] = newWallToken;
+            }
+
+            editableToken = horizontalWalls[position];
+        }
+        else
+        {
+            if (!verticalWalls.ContainsKey(position))
+            {
+                GameObject newWallToken = Instantiate(wallPrefab, actionPos, Quaternion.identity);
+                verticalWalls[position] = newWallToken;
+            }
+
+            editableToken = verticalWalls[position];
+        }
+
+        Debug.Log("Habemus token");
+
+        switch (w.status)
+        {
+            case 0:
+                editableToken.transform.Find("DamageDoorOne").gameObject.SetActive(false);
+                editableToken.transform.Find("DamageDoorTwo").gameObject.SetActive(true);
+                break;
+            case 0.5f:
+                editableToken.transform.Find("DamageDoorTwo").gameObject.SetActive(false);
+                editableToken.transform.Find("DamageDoorOne").gameObject.SetActive(true);
+                break;
+            case 2:
+                editableToken.transform.Find("BrokenDoor").gameObject.SetActive(false);
+                editableToken.transform.Find("ClosedDoor").gameObject.SetActive(false);
+                editableToken.transform.Find("OpenDoor").gameObject.SetActive(true);
+                break;
+            case 3:
+                editableToken.transform.Find("BrokenDoor").gameObject.SetActive(false);
+                editableToken.transform.Find("OpenDoor").gameObject.SetActive(false);
+                editableToken.transform.Find("ClosedDoor").gameObject.SetActive(true);
+                break;
+            case 4:
+                editableToken.transform.Find("OpenDoor").gameObject.SetActive(false);
+                editableToken.transform.Find("ClosedDoor").gameObject.SetActive(false);
+                editableToken.transform.Find("BrokenDoor").gameObject.SetActive(true);
+                break;
+        }
+
         yield return null;
     }
 
@@ -177,12 +341,14 @@ public class EntityManager : MonoBehaviour
     {
         GameObject human = positionManager.get_poi_human(p.x, p.y);
         GameObject unrevealed = positionManager.get_poi_unrevealed(p.x, p.y);
+        GameObject ghost = positionManager.get_ghost(p.x, p.y);
+        GameObject fog = positionManager.get_fog(p.x, p.y);
 
         Debug.Log(p.new_status);
 
         if (p.new_status == 0 || p.new_status == 5)
         {
-            if (p.old_status == 3)
+            if (p.old_status == 3 || p.old_status == 5)
             {
                 StartCoroutine(positionManager.hide(unrevealed, 0, animationTime));
             }
@@ -216,6 +382,14 @@ public class EntityManager : MonoBehaviour
                 StartCoroutine(positionManager.hide(unrevealed, 0, animationTime));
                 StartCoroutine(positionManager.show(human, 0, animationTime));
             }
+        }
+
+        if (ghost.activeSelf) {
+            ghost.SetActive(false);
+        }
+
+        if (fog.activeSelf) {
+            fog.SetActive(false);
         }
 
         yield return null;

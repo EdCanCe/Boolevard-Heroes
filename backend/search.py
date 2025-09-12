@@ -55,7 +55,7 @@ def neigbors_with_cost(map: "Map", x, y, movement_type):
 
     multiplier = 1
     if movement_type == 2: # En caso de que su intención sea quitar fantasmas
-        multiplier = 0.2
+        multiplier = 0.9
 
     # Las celdas adyacentes
     adyacent = map.walls.get_neighbors(x, y)
@@ -175,7 +175,7 @@ def closest_poi(map: "Map", hero_id):
     # Para cada POI
     i = 0
     for poi in map.poi.current_poi_coords:
-        poi_matrix = dijkstra(map, poi[0], poi[1], 1)
+        poi_matrix = dijkstra(map, poi[0], poi[1], 2)
         heroes_distance = PriorityQueue()
 
         # Obtiene la distancia de cada heroe del poi actual
