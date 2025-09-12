@@ -310,6 +310,20 @@ class Hero(Agent):
 
         direction = self.get_direction(next_x, next_y) # La dirección de movimiento
 
+        # Verifica si su su casilla tiene niebla y lo elimina
+        if self.map.ghosts.get_on(self.x, self.y) == 1:
+            action = ClearFog(1, self, 4)
+            if action.is_possible():
+                action.do_action()
+                return
+            
+        # Verifica si su casilla tiene fantasma y lo elimina
+        if self.map.ghosts.get_on(self.x, self.y) == 2:
+            action = RemoveGhost(2, self, 4)
+            if action.is_possible():
+                action.do_action()
+                return
+
         # Verifica si su destino tiene niebla y lo elimina
         if self.map.ghosts.get_on(next_x, next_y) == 1:
             action = ClearFog(1, self, direction)
@@ -324,8 +338,6 @@ class Hero(Agent):
                 action.do_action()
                 return
 
-        # Despeja fantasma de sus vecinos dependiendo de su tipo de movimiento
-        #if self.movement_type == 2: # Está tratando de eliminar un fantasma
         neighbors = self.map.ghosts.get_ghosty_neighbors(self.x, self.y)
         for neighbor in neighbors:
             action = RemoveGhost(2, self, self.get_direction(neighbor[0], neighbor[1]))
