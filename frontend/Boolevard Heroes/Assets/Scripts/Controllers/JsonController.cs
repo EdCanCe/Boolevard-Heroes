@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 
 /// <summary>
 /// This follow player controller class will update the events from the main camera .
@@ -10,6 +11,7 @@ using System.Linq;
 /// </summary>
 public class JsonController : MonoBehaviour
 {
+    public TextMeshProUGUI InfoText;
     // Variable goblal que hace referencia a una url para inicializar el juego
     private string startUrl = "http://127.0.0.1:5000/start/pro";
     // Variable global que hace raferencia a una url en la simulacion del juego
@@ -46,6 +48,8 @@ public class JsonController : MonoBehaviour
     /// </summary>
     IEnumerator CallStepLoop()
     {
+        yield return new WaitForSeconds(0.1f);
+
         // Empieza el bucle en donde se espera 4 segundos para cada turno
         while (true)
         {
@@ -92,7 +96,24 @@ public class JsonController : MonoBehaviour
         Json data = JsonUtility.FromJson<Json>(json);
         Dictionary<int, Step> steps = new Dictionary<int, Step>();
 
-        if(data == null)
+        string winText = "";
+        if (data.damaged_points >= 24 || data.scared_victims >= 4)
+        {
+            winText = "\n\nSIMULATION LOSES!";
+        }
+        else if (data.saved_victims >= 7)
+        {
+            winText = "\n\nSIMULATION WINS!";
+        }
+
+        InfoText.text =
+                    $"Turn: {data.num_steps}\n" +
+                    $"House Damage: {data.damaged_points}/24\n" +
+                    $"Saved people: {data.saved_victims}/7\n" +
+                    $"Scared people: {data.scared_victims}/4" +
+                    winText;
+
+        if (data == null)
         {
             return steps;
         }
