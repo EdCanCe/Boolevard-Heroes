@@ -48,6 +48,8 @@ public class JsonController : MonoBehaviour
     /// </summary>
     IEnumerator CallStepLoop()
     {
+        yield return new WaitForSeconds(0.1f);
+
         // Empieza el bucle en donde se espera 4 segundos para cada turno
         while (true)
         {
@@ -94,12 +96,22 @@ public class JsonController : MonoBehaviour
         Json data = JsonUtility.FromJson<Json>(json);
         Dictionary<int, Step> steps = new Dictionary<int, Step>();
 
+        string winText = "";
+        if (data.damaged_points >= 24 || data.scared_victims >= 4)
+        {
+            winText = "\n\nSIMULATION LOSES!";
+        }
+        else if (data.saved_victims >= 7)
+        {
+            winText = "\n\nSIMULATION WINS!";
+        }
+
         InfoText.text =
-                    "Datos recibidos:\n" +
-                    $"Turno: {data.num_steps}\n" +
-                    $"Daño Recibido: {data.damaged_points}\n" +
-                    $"Victimas Salvadas: {data.saved_victims}\n" +
-                    $"Victimas Poseidas: {data.scared_victims}";
+                    $"Turn: {data.num_steps}\n" +
+                    $"House Damage: {data.damaged_points}/24\n" +
+                    $"Saved people: {data.saved_victims}/7\n" +
+                    $"Scared people: {data.scared_victims}/4" +
+                    winText;
 
         if (data == null)
         {
